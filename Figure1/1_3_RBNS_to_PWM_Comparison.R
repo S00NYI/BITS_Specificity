@@ -28,15 +28,19 @@ RBPs = colnames(RBNS)[2:ncol(RBNS)]
 ################################################################################
 
 ################################################################################
-numMotif = 20
+# numMotif = 20
+sd_multipler = 2
 
 RBP = 'HNRNPC'
 
 data = data.frame(RBNS[, c('Motif', RBP)])
 data = data[order(-data[, RBP]), ]
 rownames(data) = NULL
+colnames(data) = c('Motif', 'Score')
 
-motif = DNAStringSet(gsub("U", "T", data$Motif[1:numMotif]))
+data_temp = data %>% filter(Score > (mean(data$Score) + sd_multipler*sd(data$Score)))
+
+motif = DNAStringSet(gsub("U", "T", data_temp$Motif))
 pwm = PWM(consensusMatrix(motif))
 pwm = pwm - min(pwm)
 
@@ -73,27 +77,30 @@ Scores_combined = cbind(data, PWM_Motif_Scores_Normalized$Score)
 colnames(Scores_combined) = c('Motif', 'RBNS', 'PWM')
 
 ggplot(Scores_combined, aes(x = RBNS, y = PWM)) +
-  geom_point() +  
-  theme_minimal() + 
-  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
-  theme(plot.title = element_text(hjust = 0.5)) + 
+  geom_point() +
   theme_minimal() +
-  theme_bw() + 
-  theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face = 'bold'), 
+  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal() +
+  theme_bw() +
+  theme(axis.text = element_text(size=14),
+        axis.title = element_text(size=14, face = 'bold'),
         legend.text = element_text(size=14))
 
 ################################################################################
 
 
 ################################################################################
-numMotif = 10
+# numMotif = 10
 
 RBP = 'EIF4G2'
 
 data = data.frame(RBNS[, c('Motif', RBP)])
 data = data[order(-data[, RBP]), ]
 rownames(data) = NULL
+colnames(data) = c('Motif', 'Score')
+
+data_temp = data %>% filter(Score > (mean(data$Score) + sd_multipler*sd(data$Score)))
 
 motif = DNAStringSet(gsub("U", "T", data$Motif[1:numMotif]))
 pwm = PWM(consensusMatrix(motif))
@@ -132,26 +139,29 @@ Scores_combined = cbind(data, PWM_Motif_Scores_Normalized$Score)
 colnames(Scores_combined) = c('Motif', 'RBNS', 'PWM')
 
 ggplot(Scores_combined, aes(x = RBNS, y = PWM)) +
-  geom_point() +  
-  theme_minimal() + 
-  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
-  theme(plot.title = element_text(hjust = 0.5)) + 
+  geom_point() +
   theme_minimal() +
-  theme_bw() + 
-  theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face = 'bold'), 
+  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal() +
+  theme_bw() +
+  theme(axis.text = element_text(size=14),
+        axis.title = element_text(size=14, face = 'bold'),
         legend.text = element_text(size=14))
 
 ################################################################################
 
 ################################################################################
-numMotif = 20
+# numMotif = 20
 
 RBP = 'RBM25'
 
 data = data.frame(RBNS[, c('Motif', RBP)])
 data = data[order(-data[, RBP]), ]
 rownames(data) = NULL
+colnames(data) = c('Motif', 'Score')
+
+data_temp = data %>% filter(Score > (mean(data$Score) + sd_multipler*sd(data$Score)))
 
 motif = DNAStringSet(gsub("U", "T", data$Motif[1:numMotif]))
 pwm = PWM(consensusMatrix(motif))
@@ -190,14 +200,14 @@ Scores_combined = cbind(data, PWM_Motif_Scores_Normalized$Score)
 colnames(Scores_combined) = c('Motif', 'RBNS', 'PWM')
 
 ggplot(Scores_combined, aes(x = RBNS, y = PWM)) +
-  geom_point() +  
-  theme_minimal() + 
-  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
-  theme(plot.title = element_text(hjust = 0.5)) + 
+  geom_point() +
   theme_minimal() +
-  theme_bw() + 
-  theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face = 'bold'), 
+  labs(x = "RBNS Score", y = "PWM Score", title = "Scatter Plot of RBNS vs. PWM") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal() +
+  theme_bw() +
+  theme(axis.text = element_text(size=14),
+        axis.title = element_text(size=14, face = 'bold'),
         legend.text = element_text(size=14))
 
 ################################################################################
