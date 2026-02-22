@@ -1,43 +1,52 @@
-## RBP Specificity Analysis Scripts:
+## RBP Specificity Analysis Scripts
 - Author: Soon Yi
-- Last updated: 2025-04-15
--------------------------------------------------------------------------------------------------------------------
-![alt text](https://github.com/S00NYI/Specificity_BITs/blob/main/Analysis_Outline.png?raw=true)
--------------------------------------------------------------------------------------------------------------------
+- Last updated: 2026-02-22
+---
 
-#### 0_1_RBNS_DataParsing.R
-  - RBNS data parsing based on the RBNS sample list.
+## Repository Structure
 
-#### 0_2_RBNS_DataParsing.R
-  - IS and MS calculation across K-mers for RBNS data.
+### `PreProcessing_Scripts/`
+Scripts for preprocessing raw RBNS data.
 
-#### 1_1_RBNS_to_Distribution.R
-  - Generate normalized distribution plot for selected RBPs.
+| Script | Description |
+|--------|-------------|
+| `0_1_RBNS_DataParsing.R` | RBNS data parsing based on the RBNS sample list |
+| `0_2_RBNS_MetricCalculation.R` | IS and MS calculation across K-mers for RBNS data |
 
-#### 1_2_RBNS_to_PWM_Logo.R
-  - Generate PWM and sequence logo for selected RBPs.
+---
 
-#### 1_3_RBNS_to_PWM_Comparison.R
-  - Generate score based on PWM and compare to RBNS.
+### `Figure_Scripts/`
+Scripts for generating manuscript figures using the [RBPEqBind](https://github.com/S00NYI/RBPEqBind) package.
 
-#### 2_1_Metrics_Kmers_Comparison.R
-  - Compare IS/MS values across K-mers for RBPs with single RBD purified.
-  
-#### 3_1_eCLIP_Analysis.R
-  - eCLIP data processing based on the eCLIP sample list.
-   
-#### 3_2_eCLIP_Analysis_Plot.R
-  - eCLIP data analysis (AS/A-MS calculation, compare to IS/MS).
+| Script | Description |
+|--------|-------------|
+| `Figure_1.R` | Figure 1 panels |
+| `Figure_2.R` | Figure 2 panels |
+| `Figure_3.R` | Figure 3 panels — binding simulation with model RBPs (HH/HL/LH/LL), concentration sweeps, and competitive binding |
+| `Figure_3_G.R` | Figure 3G — U2AF2 cofactor competition (HNRNPC, PTBP1) on PTBP2 transcript with iCLIP vs simulation comparison |
+| `Figure_S1.R` | Supplemental Figure S1 panels |
 
-#### 4_1_RRM_Swap_Analysis.R
-  - RRM swap CLIP analysis.
+---
 
-#### 5_1_RNA_RBP_Modeling.py
-  - RNA-RBP binding simulation using model RBP data.
-   
-#### 5_2_RNA_RBP_Modeling.R
-  - Simulation result processing for figure output.
+### `Dataset/`
+Input data and analysis outputs.
 
-#### 6_1_in_vitro_iCLIP_modeling.py
-  - Modeling the in vitro iCLIP results with RNACompete data.
+| Path | Description |
+|------|-------------|
+| `Table_S1.xlsx` | Supplemental Table S1 |
+| `Table_S2.xlsx` | Supplemental Table S2 |
+| `Table_S3.xlsx` | Supplemental Table S3 |
+| `Table_S4.xlsx` | Supplemental Table S4 |
+| `Analysis/sample_table_RBNS.csv` | RBNS sample metadata |
+| `Analysis/sample_table_eCLIP.csv` | eCLIP sample metadata |
+| `Analysis/Model_RBP/` | Model RBP affinity data |
+| `Analysis/RBNS/` | Processed RBNS data |
+| `Analysis/eCLIP_peak/` | eCLIP peak data |
+| `Analysis/RBPEqBind_Simulation/` | U2AF2 simulation data (RNACompete model, FASTA, iCLIP bedgraphs, binding sites) |
+| `AnalysisOutput/` | Analysis output tables and figures |
+
+---
+
+### `Deprecated/`
+Legacy analysis scripts superseded by the current Figure/PreProcessing scripts.
 
