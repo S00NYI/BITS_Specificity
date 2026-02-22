@@ -65,7 +65,7 @@ plotBinding(simResults,
             xlim = xlim)
 
 plotHeatmap(simResults,
-            metric = "occupancy_fc",
+            metric = "density",
             transcript = "CustomRNA", 
             xlim = xlim, 
             xaxis_type = "both")
