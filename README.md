@@ -16,7 +16,7 @@ Scripts for preprocessing raw RBNS data.
 ---
 
 ### `Figure_Scripts/`
-Scripts for generating manuscript figures using the [RBPEqBind](https://github.com/S00NYI/RBPEqBind) package.
+Scripts for generating manuscript figures using the [RBPEqBind](https://github.com/S00NYI/RBPEqBind) and [RBPSpecificity](https://github.com/S00NYI/RBPSpecificity) packages.
 
 | Script | Description |
 |--------|-------------|
@@ -49,4 +49,11 @@ Input data and analysis outputs.
 
 ### `Deprecated/`
 Legacy analysis scripts superseded by the current Figure/PreProcessing scripts.
+
+
+---
+For more information, please check our manuscript:
+> Yi S, Singh SS, Ye X, Krishna R, Jankowsky E, Luna JM. (2025). 
+> *Inherent Specificity and Mutational Sensitivity as Quantitative Metrics for RBP Binding.* 
+> bioRxiv. https://www.biorxiv.org/content/10.1101/2025.03.28.646018v2
 
