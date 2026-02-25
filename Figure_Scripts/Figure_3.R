@@ -274,3 +274,61 @@ p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HH_Density,
        color = "Scenario", linetype = "Scenario")
 print(p_density_roi)
 ################################################################################
+
+## Heatmap: HH Density across all positions vs Cofactor Concentration
+################################################################################
+zlim_heatmap = c(0, 0.07)  # Adjustable color scale
+scenarios = list(
+  list(name = "HH + LL (HH stronger)",
+       max_aff = c("HH" = 100, "LL" = 10),
+       min_aff = c("HH" = 0.001, "LL" = 0.001),
+       cofac = "LL"),
+  list(name = "HH + LL (HH weaker)",
+       max_aff = c("HH" = 10, "LL" = 100),
+       min_aff = c("HH" = 0.001, "LL" = 0.001),
+       cofac = "LL"),
+  list(name = "HH + HL (HH stronger)",
+       max_aff = c("HH" = 100, "HL" = 10),
+       min_aff = c("HH" = 0.001, "HL" = 0.001),
+       cofac = "HL"),
+  list(name = "HH + HL (HH weaker)",
+       max_aff = c("HH" = 10, "HL" = 100),
+       min_aff = c("HH" = 0.001, "HL" = 0.001),
+       cofac = "HL")
+)
+conc_cofac_range = c(0, 10, 25, 50, 100, 250, 500, 1000)
+for (sc in scenarios) {
+  rbp_m = setModel(Model_RBPs,
+                   max_affinity = sc$max_aff,
+                   min_affinity = sc$min_aff)
+  heatmap_data = data.frame()
+  for (conc_cf in conc_cofac_range) {
+    conc_p = c("HH" = 100)
+    conc_p[sc$cofac] = conc_cf
+    res = simulateBinding(seq_Target, rbp_m, conc_p, rna_conc = 10.0, k = 5)
+    heatmap_data = rbind(heatmap_data, data.frame(
+      pos = res$pos,
+      nt = res$nt,
+      Cofactor_Conc = conc_cf,
+      HH_Density = res$HH_density
+    ))
+  }
+  heatmap_data$Cofactor_Conc = factor(heatmap_data$Cofactor_Conc,
+                                      levels = rev(conc_cofac_range))
+  p_hm = ggplot(heatmap_data, aes(x = pos, y = Cofactor_Conc, fill = HH_Density)) +
+    geom_tile() +
+    scale_fill_viridis_c(name = "HH Density", limits = zlim_heatmap,
+                         oob = scales::squish) +
+    scale_x_continuous(breaks = seq(1, max(heatmap_data$pos), by = 10)) +
+    theme_bw() +
+    theme(axis.text.x = element_text(size = 8, hjust = 1),
+          axis.text.y = element_text(size = 10),
+          axis.title = element_text(size = 12, face = "bold"),
+          plot.title = element_text(size = 13, face = "bold")) +
+    labs(title = paste0("HH Density: ", sc$name),
+         x = "Position",
+         y = paste0(sc$cofac, " Concentration (nM)"))
+  print(p_hm)
+}
+################################################################################
+
