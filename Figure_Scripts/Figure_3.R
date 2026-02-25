@@ -192,3 +192,85 @@ for (conc_LL in conc_LL_range) {
 }
 ################################################################################
 
+## HH Density at UUUUU Site vs Cofactor Concentration
+################################################################################
+library(ggplot2)
+roi_positions = 29:33
+conc_cofac_range = c(0, 10, 25, 50, 100, 250, 500, 1000)
+density_results = data.frame()
+## Scenario 1: HH + LL, HH stronger (HH: 100, LL: 10)
+rbp_Models_c1 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 100, "LL" = 10),
+                         min_affinity = c("HH" = 0.001, "LL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c1,
+                        c("HH" = 100, "LL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL (HH stronger)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Scenario 2: HH + LL, HH weaker (HH: 10, LL: 100)
+rbp_Models_c2 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 10, "LL" = 100),
+                         min_affinity = c("HH" = 0.001, "LL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c2,
+                        c("HH" = 100, "LL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL (HH weaker)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Scenario 3: HH + HL, HH stronger (HH: 100, HL: 10)
+rbp_Models_c3 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 100, "HL" = 10),
+                         min_affinity = c("HH" = 0.001, "HL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c3,
+                        c("HH" = 100, "HL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + HL (HH stronger)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Scenario 4: HH + HL, HH weaker (HH: 10, HL: 100)
+rbp_Models_c4 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 10, "HL" = 100),
+                         min_affinity = c("HH" = 0.001, "HL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c4,
+                        c("HH" = 100, "HL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + HL (HH weaker)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Plot
+density_results$Scenario = factor(density_results$Scenario,
+                                  levels = c("HH + LL (HH stronger)", "HH + LL (HH weaker)",
+                                             "HH + HL (HH stronger)", "HH + HL (HH weaker)"))
+p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HH_Density,
+                                            color = Scenario, linetype = Scenario)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("HH + LL (HH stronger)" = "#2E86AB",
+                                "HH + LL (HH weaker)" = "#E74C3C",
+                                "HH + HL (HH stronger)" = "#27AE60",
+                                "HH + HL (HH weaker)" = "#F39C12")) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = "right") +
+  ylim(c(0, 0.07)) + 
+  labs(title = "HH Density at UUUUU (pos 29-33) vs Cofactor Concentration",
+       x = "Cofactor Concentration (nM)",
+       y = "Mean HH Density",
+       color = "Scenario", linetype = "Scenario")
+print(p_density_roi)
+################################################################################
