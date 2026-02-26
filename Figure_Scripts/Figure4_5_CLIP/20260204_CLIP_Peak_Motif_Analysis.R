@@ -45,7 +45,6 @@ PWM_SD          = 2
 
 # Define test configurations
 LOCAL_EXTENSIONS = list(
-
   "ext15_n10" = c(15, -10),
   "ext15_n15" = c(15, -15),
   "ext20_n10" = c(20, -10),
@@ -310,7 +309,7 @@ for (CONDITION_DIR in all_condition_dirs) {
 }
 ################################################################################
 
-## 6. Focused Analysis: ext10_n15 scrambleOFF
+## 6. Focused Analysis: ext15_n15 scrambleOFF
 ################################################################################
 FOCUS_DIR = paste0(OUTPUT_BASE, "local_ext15_n15_scrambleOFF/")
 
