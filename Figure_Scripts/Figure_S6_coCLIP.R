@@ -653,3 +653,9 @@ print(plotSeqLogo(Peak_Co_G3BP_S, genome, narrow_window, "HuR G3BP Stress", exte
 ################################################################################
 
 
+################################################################################
+t.test(motifEnrichment_Co_Input_M$Score, motifEnrichment_Co_Input_S$Score)
+t.test(motifEnrichment_Co_NLS_M$Score, motifEnrichment_Co_NLS_S$Score)
+t.test(motifEnrichment_Co_NES_M$Score, motifEnrichment_Co_NES_S$Score)
+t.test(motifEnrichment_Co_G3BP_M$Score, motifEnrichment_Co_G3BP_S$Score)
+################################################################################
