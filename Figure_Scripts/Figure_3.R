@@ -277,7 +277,7 @@ print(p_density_roi)
 
 ## Heatmap: HH Density across all positions vs Cofactor Concentration
 ################################################################################
-zlim_heatmap = c(0, 0.07)  # Adjustable color scale
+zlim_heatmap = c(0, 0.035)  # Adjustable color scale
 scenarios = list(
   list(name = "HH + LL (HH stronger)",
        max_aff = c("HH" = 100, "LL" = 10),
@@ -315,13 +315,16 @@ for (sc in scenarios) {
   }
   heatmap_data$Cofactor_Conc = factor(heatmap_data$Cofactor_Conc,
                                       levels = rev(conc_cofac_range))
+  nt_labels = unique(heatmap_data[, c("pos", "nt")])
+  nt_labels = nt_labels[order(nt_labels$pos), ]
   p_hm = ggplot(heatmap_data, aes(x = pos, y = Cofactor_Conc, fill = HH_Density)) +
     geom_tile() +
     scale_fill_viridis_c(name = "HH Density", limits = zlim_heatmap,
                          oob = scales::squish) +
-    scale_x_continuous(breaks = seq(1, max(heatmap_data$pos), by = 10)) +
+    scale_x_continuous(breaks = nt_labels$pos, labels = nt_labels$nt,
+                       expand = c(0, 0)) +
     theme_bw() +
-    theme(axis.text.x = element_text(size = 8, hjust = 1),
+    theme(axis.text.x = element_text(size = 6),
           axis.text.y = element_text(size = 10),
           axis.title = element_text(size = 12, face = "bold"),
           plot.title = element_text(size = 13, face = "bold")) +
