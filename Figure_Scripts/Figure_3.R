@@ -493,7 +493,7 @@ p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HNRNPC_WT_den
         axis.title = element_text(size = 14, face = "bold"),
         legend.text = element_text(size = 11),
         legend.position = "right") +
-  # ylim(c(0, 0.1)) + 
+  ylim(c(0, 0.04)) +
   labs(title = "HNRNPC_WT Density at UUUUU (pos 29-33) vs Cofactor Concentration",
        x = "Cofactor Concentration (nM)",
        y = "Mean HNRNPC_WT Density",
