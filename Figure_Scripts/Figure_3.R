@@ -502,3 +502,195 @@ print(p_density_roi)
 ################################################################################
 
 
+## HH Density at UUUUU Site vs LL Concentration: Both High vs Both Low
+################################################################################
+library(ggplot2)
+roi_positions = 29:33
+conc_cofac_range = c(0, 10, 25, 50, 100, 250, 500, 1000)
+density_results = data.frame()
+## Scenario 1: HH + LL, HH stronger (HH: 100, LL: 10)
+rbp_Models_c1 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 100, "LL" = 100),
+                         min_affinity = c("HH" = 0.001, "LL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c1,
+                        c("HH" = 100, "LL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL (Both High)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Scenario 2: HH + LL, HH weaker (HH: 10, LL: 100)
+rbp_Models_c2 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 10, "LL" = 10),
+                         min_affinity = c("HH" = 0.001, "LL" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c2,
+                        c("HH" = 100, "LL" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL (Both Weaker)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+
+## Plot
+density_results$Scenario = factor(density_results$Scenario,
+                                  levels = c("HH + LL (Both High)", "HH + LL (Both Weaker)"))
+p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HH_Density,
+                                            color = Scenario, linetype = Scenario)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("HH + LL (Both High)" = "#2E86AB",
+                                "HH + LL (Both Weaker)" = "#E74C3C")) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = "right") +
+  ylim(c(0, 0.1)) + 
+  labs(title = "HH Density at UUUUU (pos 29-33) vs Cofactor Concentration",
+       x = "Cofactor Concentration (nM)",
+       y = "Mean HH Density",
+       color = "Scenario", linetype = "Scenario")
+print(p_density_roi)
+################################################################################
+
+## HH Density at UUUUU Site vs LL_G Concentration: Both High vs Both Low
+################################################################################
+library(ggplot2)
+roi_positions = 29:33
+conc_cofac_range = c(0, 10, 25, 50, 100, 250, 500, 1000)
+density_results = data.frame()
+## Scenario 1: HH + LL_G, HH stronger (HH: 100, LL_G: 10)
+rbp_Models_c1 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 100, "LL_G" = 100),
+                         min_affinity = c("HH" = 0.001, "LL_G" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c1,
+                        c("HH" = 100, "LL_G" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL_G (Both High)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+## Scenario 2: HH + LL_G, HH weaker (HH: 10, LL_G: 100)
+rbp_Models_c2 = setModel(Model_RBPs,
+                         max_affinity = c("HH" = 10, "LL_G" = 10),
+                         min_affinity = c("HH" = 0.001, "LL_G" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c2,
+                        c("HH" = 100, "LL_G" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HH + LL_G (Both Weaker)",
+    Cofactor_Conc = conc_cf,
+    HH_Density = mean(res$HH_density[roi_positions])
+  ))
+}
+
+## Plot
+density_results$Scenario = factor(density_results$Scenario,
+                                  levels = c("HH + LL_G (Both High)", "HH + LL_G (Both Weaker)"))
+p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HH_Density,
+                                            color = Scenario, linetype = Scenario)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("HH + LL_G (Both High)" = "#2E86AB",
+                                "HH + LL_G (Both Weaker)" = "#E74C3C")) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = "right") +
+  ylim(c(0, 0.1)) + 
+  labs(title = "HH Density at UUUUU (pos 29-33) vs Cofactor Concentration",
+       x = "Cofactor Concentration (nM)",
+       y = "Mean HH Density",
+       color = "Scenario", linetype = "Scenario")
+print(p_density_roi)
+################################################################################
+
+## HNRNPC_WT Density at UUUUU Site vs Cofactor Concentration RBM25_WT and RBM25_Mut: Both High vs Both Low
+################################################################################
+library(ggplot2)
+roi_positions = 29:33
+conc_cofac_range = c(0, 10, 25, 50, 100, 250, 500, 1000)
+density_results = data.frame()
+## Scenario 1: HNRNPC_WT + RBM25_WT, Both High (HNRNPC_WT: 100, RBM25_WT: 100)
+rbp_Models_c1 = setModel(Model_RBPs,
+                         max_affinity = c("HNRNPC_WT" = 100, "RBM25_WT" = 100),
+                         min_affinity = c("HNRNPC_WT" = 0.001, "RBM25_WT" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c1,
+                        c("HNRNPC_WT" = 100, "RBM25_WT" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HNRNPC_WT + RBM25_WT (Both High)",
+    Cofactor_Conc = conc_cf,
+    HNRNPC_WT_density = mean(res$HNRNPC_WT_density[roi_positions])
+  ))
+}
+## Scenario 2: HNRNPC_WT + RBM25_WT, Both Weak (HNRNPC_WT: 10, RBM25_WT: 100)
+rbp_Models_c2 = setModel(Model_RBPs,
+                         max_affinity = c("HNRNPC_WT" = 10, "RBM25_WT" = 10),
+                         min_affinity = c("HNRNPC_WT" = 0.001, "RBM25_WT" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c2,
+                        c("HNRNPC_WT" = 100, "RBM25_WT" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HNRNPC_WT + RBM25_WT (Both Weaker)",
+    Cofactor_Conc = conc_cf,
+    HNRNPC_WT_density = mean(res$HNRNPC_WT_density[roi_positions])
+  ))
+}
+## Scenario 3: HNRNPC_WT + RBM25_Mut, Both High (HNRNPC_WT: 100, RBM25_Mut: 100)
+rbp_Models_c3 = setModel(Model_RBPs,
+                         max_affinity = c("HNRNPC_WT" = 100, "RBM25_Mut" = 10),
+                         min_affinity = c("HNRNPC_WT" = 0.001, "RBM25_Mut" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c3,
+                        c("HNRNPC_WT" = 100, "RBM25_Mut" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HNRNPC_WT + RBM25_Mut (Both High)",
+    Cofactor_Conc = conc_cf,
+    HNRNPC_WT_density = mean(res$HNRNPC_WT_density[roi_positions])
+  ))
+}
+## Scenario 4: HNRNPC_WT + RBM25_Mut, Both Weak (HNRNPC_WT: 10, RBM25_Mut: 10)
+rbp_Models_c4 = setModel(Model_RBPs,
+                         max_affinity = c("HNRNPC_WT" = 10, "RBM25_Mut" = 100),
+                         min_affinity = c("HNRNPC_WT" = 0.001, "RBM25_Mut" = 0.001))
+for (conc_cf in conc_cofac_range) {
+  res = simulateBinding(seq_Target, rbp_Models_c4,
+                        c("HNRNPC_WT" = 100, "RBM25_Mut" = conc_cf), rna_conc = 10.0, k = 5)
+  density_results = rbind(density_results, data.frame(
+    Scenario = "HNRNPC_WT + RBM25_Mut (Both Weaker)",
+    Cofactor_Conc = conc_cf,
+    HNRNPC_WT_density = mean(res$HNRNPC_WT_density[roi_positions])
+  ))
+}
+## Plot
+density_results$Scenario = factor(density_results$Scenario,
+                                  levels = c("HNRNPC_WT + RBM25_WT (Both High)", "HNRNPC_WT + RBM25_WT (Both Weaker)",
+                                             "HNRNPC_WT + RBM25_Mut (Both High)", "HNRNPC_WT + RBM25_Mut (Both Weaker)"))
+p_density_roi = ggplot(density_results, aes(x = Cofactor_Conc, y = HNRNPC_WT_density,
+                                            color = Scenario, linetype = Scenario)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("HNRNPC_WT + RBM25_WT (Both High)" = "#2E86AB",
+                                "HNRNPC_WT + RBM25_WT (Both Weaker)" = "#E74C3C",
+                                "HNRNPC_WT + RBM25_Mut (Both High)" = "#27AE60",
+                                "HNRNPC_WT + RBM25_Mut (Both Weaker)" = "#F39C12")) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = "right") +
+  ylim(c(0, 0.04)) +
+  labs(title = "HNRNPC_WT Density at UUUUU (pos 29-33) vs Cofactor Concentration",
+       x = "Cofactor Concentration (nM)",
+       y = "Mean HNRNPC_WT Density",
+       color = "Scenario", linetype = "Scenario")
+print(p_density_roi)
+################################################################################
