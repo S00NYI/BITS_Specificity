@@ -25,11 +25,11 @@ cell_lines = c('K562', 'HepG2')
 K562_RBPs = as.character(unique((sampleTable_eCLIP %>% filter(Cell == 'K562'))[, 'RBP']))
 HepG2_RBPs = as.character(unique((sampleTable_eCLIP %>% filter(Cell == 'HepG2'))[, 'RBP']))
 
-extensions = c(0, 10, 25, 50, 100)
+# extensions = c(0, 10, 25, 50, 100)
 extensions = c(25)
 K = 5
 
-outputDir = '~/Repos/BITS_Specificity/Dataset/AnalysisOutput/'
+outputDir = '~/Repos/BITS_Specificity/Dataset/Analysis/eCLIP_peak/output/'
 DATE = format(Sys.Date(), "%Y%m%d")
 if (!dir.exists(paste0(outputDir, DATE, '/'))) {
   dir.create(paste0(outputDir, DATE, '/'), recursive = TRUE, showWarnings = FALSE)
@@ -63,7 +63,8 @@ for (cell_line in cell_lines) {
                                    bkg_iter = 100, 
                                    bkg_min_dist = 500, 
                                    bkg_max_dist = 1000,
-                                   log_transform = TRUE)
+                                   log_transform = TRUE,
+                                   scramble_bkg = FALSE)
       IS = returnIS(enrichment, return_type = 'all')
       MS = returnMS(enrichment, return_type = 'all')
 
@@ -78,7 +79,7 @@ for (cell_line in cell_lines) {
 }
 ################################################################################
 
-DATE = '20260221'
+DATE = '20260316'
 extension = 25
 
 # Compile all eCLIP Data:
@@ -644,8 +645,8 @@ ggplot() +
   labs(x = 'Inherent Specificity',
        y = 'Apparent Specificity',
        title = paste0('Apparent vs Inherent Specificity')) +
-  scale_x_continuous(trans = 'log2', limits = c(1, 128)) +
-  scale_y_continuous(trans = 'log2', limits = c(1, 128)) +
+  scale_x_continuous(trans = 'log2', limits = c(1, 64)) +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme_minimal() +
   theme_bw() +
