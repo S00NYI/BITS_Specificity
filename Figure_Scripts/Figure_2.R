@@ -129,13 +129,13 @@ eCLIP_noStrucutures = data.frame(MOTIF = PCBP2$Motif,
 
 
 for (RBP in c('HNRNPC', 'HNRNPL', 'PCBP1', 'TIA1', 'KHSRP', 'FUS')) {
-  K562 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  K562 = read_csv(paste0(outputDir, DATE, '/K562_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   K562 = K562[, -1]
   colnames(K562) = c('Motif', 'Score')
   K562$Motif = gsub("T", "U", K562$Motif)
   K562 = K562 %>% arrange(Motif)
 
-  HepG2 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  HepG2 = read_csv(paste0(outputDir, DATE, '/HepG2_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   HepG2 = HepG2[, -1]
   colnames(HepG2) = c('Motif', 'Score')
   HepG2$Motif = gsub("T", "U", HepG2$Motif)
@@ -208,13 +208,13 @@ eCLIP_Strucutures = data.frame(MOTIF = PUM1$Motif,
 
 
 for (RBP in c('RBFOX2', 'RBM22', 'TRA2A', 'TAF15')) {
-  K562 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  K562 = read_csv(paste0(outputDir, DATE, '/K562_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   K562 = K562[, -1]
   colnames(K562) = c('Motif', 'Score')
   K562$Motif = gsub("T", "U", K562$Motif)
   K562 = K562 %>% arrange(Motif)
 
-  HepG2 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  HepG2 = read_csv(paste0(outputDir, DATE, '/HepG2_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   HepG2 = HepG2[, -1]
   colnames(HepG2) = c('Motif', 'Score')
   HepG2$Motif = gsub("T", "U", HepG2$Motif)
@@ -300,13 +300,13 @@ eCLIP_unKnown = data.frame(MOTIF = SAFB2$Motif,
 
 
 for (RBP in c('LIN28B', 'TROVE2')) {
-  K562 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  K562 = read_csv(paste0(outputDir, DATE, '/K562_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   K562 = K562[, -1]
   colnames(K562) = c('Motif', 'Score')
   K562$Motif = gsub("T", "U", K562$Motif)
   K562 = K562 %>% arrange(Motif)
 
-  HepG2 = read_csv(paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
+  HepG2 = read_csv(paste0(outputDir, DATE, '/HepG2_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), col_names = T,  show_col_types = F)
   HepG2 = HepG2[, -1]
   colnames(HepG2) = c('Motif', 'Score')
   HepG2$Motif = gsub("T", "U", HepG2$Motif)
