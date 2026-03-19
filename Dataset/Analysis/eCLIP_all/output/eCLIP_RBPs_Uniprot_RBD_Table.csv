@@ -1,0 +1,169 @@
+﻿RBP,Domains,Domain Architecture,Primary RBD,Other Domains,Disordered Regions
+AARS,,,,,
+AATF,,,,,YES
+ABCF1,"ABC transporter 1, ABC transporter 2",,,Other,YES
+ADAT1,A to I editase,,,Other,YES
+AGGF1,"FHA, G-patch",,,G-patch,YES
+AKAP1,"KH, Tudor",Single,KH,Tudor,YES
+AKAP8L,,,,,YES
+APEX1,,,,Other,YES
+APOBEC3C,CMP/dCMP-type deaminase,,,Other,
+AQR,,,,,YES
+BCCIP,,,,,YES
+BCLAF1,,,,,YES
+BUD13,,,,,YES
+CDC40,,,,,YES
+CPEB4,"RRM 1, RRM 2",Multi,RRM,,YES
+CPSF6,RRM,Single,RRM,,YES
+CSTF2,RRM,Single,RRM,,YES
+CSTF2T,RRM,Single,RRM,,YES
+DDX1,"Helicase ATP-binding, B30.2/SPRY, Helicase C-terminal",Single,Helicase,,
+DDX21,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX24,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX3X,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX42,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX43,"KH, Helicase ATP-binding, Helicase C-terminal",Mixed,"Helicase, KH",,YES
+DDX47,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX51,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX52,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX55,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX59,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DDX6,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DGCR8,"WW, DRBM 1, DRBM 2",Multi,dsRBM,,YES
+DHX30,"DRBM, Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+DKC1,PUA,,,PUA,YES
+DROSHA,"RNase III 1, RNase III 2, DRBM",Single,dsRBM,,YES
+EEF2,tr-type G,,,Other,
+EFTUD2,tr-type G,,,Other,YES
+EIF3D,,,,,YES
+EIF3G,RRM,Single,RRM,,YES
+EIF3H,MPN,,,Other,YES
+EIF4E,,,,,YES
+EIF4G2,"MIF4G, MI, W2",,,Other,YES
+ELAC2,,,,,YES
+ELAVL1,"RRM 1, RRM 2, RRM 3",Multi,RRM,,
+EWSR1,"IQ, RRM",Single,RRM,,YES
+EXOSC10,"3'-5' exonuclease, HRDC",,,Other,YES
+EXOSC5,,,,,YES
+FAM120A,,,,Other,YES
+FASTKD2,RAP,,,Other,
+FKBP4,"PPIase FKBP-type 1, PPIase FKBP-type 2",,,Other,YES
+FMR1,"Agenet-like 1, Agenet-like 2, KH 1, KH 2",Multi,KH,,YES
+FTO,,,,,
+FUBP3,"KH 1, KH 2, KH 3, KH 4",Multi,KH,,YES
+FUS,RRM,Single,RRM,,YES
+FXR1,"Agenet-like 1, Agenet-like 2, KH 1, KH 2",Multi,KH,Agenet-like,YES
+FXR2,"Agenet-like 1, Agenet-like 2, KH 1, KH 2",Multi,KH,Agenet-like,YES
+G3BP1,"NTF2, RRM",Single,RRM,,YES
+GARS,WHEP-TRS,,,Other,
+GEMIN5,,,,,YES
+GNL3,CP-type G,,,Other,YES
+GPKOW,"G-patch, KOW 1, KOW 2",,,G-patch,YES
+GRSF1,"RRM 1, RRM 2, RRM 3",Multi,RRM,,
+GRWD1,,,,,YES
+GTF2F1,,,,,YES
+HLTF,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+HNRNPA1,"RRM 1, RRM 2",Multi,RRM,,YES
+HNRNPC,RRM,Single,RRM,,YES
+HNRNPK,"KH 1, KH 2, KH 3",Multi,KH,,YES
+HNRNPL,"RRM 1, RRM 2, RRM 3, RRM 4",Multi,RRM,,YES
+HNRNPM,"RRM 1, RRM 2, RRM 3",Multi,RRM,,YES
+HNRNPU,"SAP, B30.2/SPRY",,,SAP,YES
+HNRNPUL1,"SAP, B30.2/SPRY",,,SAP,YES
+IGF2BP1,"RRM 1, RRM 2, KH 1, KH 2, KH 3, KH 4",Mixed,"RRM, KH",,YES
+IGF2BP2,"RRM 1, RRM 2, KH 1, KH 2, KH 3, KH 4",Mixed,"RRM, KH",,YES
+IGF2BP3,"RRM 1, RRM 2, KH 1, KH 2, KH 3, KH 4",Mixed,"RRM, KH",,YES
+ILF3,"DZF, DRBM 1, DRBM 2",Mixed,dsRBM,DZF,YES
+KHDRBS1,KH,Single,KH,,YES
+KHSRP,"KH 1, KH 2, KH 3, KH 4",Multi,KH,,YES
+LARP4,"HTH La-type RNA-binding, RRM",Mixed,RRM,HTH La-type RNA-binding,YES
+LARP7,"HTH La-type RNA-binding, RRM, xRRM",Multi,RRM,HTH La-type RNA-binding,YES
+LIN28B,CSD,,,CSD,YES
+LSM11,Sm,,,Sm,YES
+MATR3,"RRM 1, RRM 2",Multi,RRM,,YES
+MBNL1,,,,ZNF_C3H1_type,
+METAP2,,,,,YES
+METTL1,,,,,YES
+MORC2,,,,,YES
+MTPAP,PAP-associated,,,Other,
+NCBP2,RRM,Single,RRM,,YES
+NIP7,,,,,YES
+NIPBL,,,,,YES
+NKRF,"G-patch, R3H",,,G-Patch,YES
+NOL12,,,,,YES
+NOLC1,LisH,,,,YES
+NONO,"RRM 1, RRM 2",Multi,RRM,,YES
+NPM1,,,,,YES
+NSUN2,,,,,YES
+PABPC4,"RRM 1, RRM 2, RRM 3, RRM 4, PABC",Multi,RRM,,YES
+PABPN1,RRM,Single,RRM,,YES
+PCBP1,"KH 1, KH 2, KH 3",Multi,KH,,
+PCBP2,"KH 1, KH 2, KH 3",Multi,KH,,
+PHF6,,,,,YES
+POLR2G,,,,,
+PPIG,PPIase cyclophilin-type,,,Other,YES
+PPIL4,"PPIase cyclophilin-type, RRM",Single,RRM,Other,YES
+PRPF4,,,,,YES
+PRPF8,MPN,,,Other,
+PTBP1,"RRM 1, RRM 2, RRM 3, RRM 4",Multi,RRM,,
+PUM1,PUM-HD,,,PUM,YES
+PUM2,PUM-HD,,,PUM,YES
+PUS1,,,,,YES
+QKI,KH,Single,KH,,
+RBFOX2,RRM,Single,RRM,,YES
+RBM15,"RRM 1, RRM 2, RRM 3, SPOC",Multi,RRM,,YES
+RBM22,RRM,Single,RRM,,YES
+RBM5,"RRM 1, RRM 2, G-patch",Mixed,RRM,G-Patch,YES
+RNF187,,,,ZNF_Ring_type,
+RPS10,,,,,YES
+RPS11,,,,,
+RPS3,KH type-2,Single,KH,,YES
+RPS6,,,,,YES
+RYBP,,,,,YES
+SAFB,"SAP, RRM",Mixed,RRM,SAP,YES
+SAFB2,"SAP, RRM",Mixed,RRM,SAP,YES
+SBDS,,,,,
+SDAD1,,,,,YES
+SERBP1,,,,,YES
+SF3A3,,,,,YES
+SF3B1,,,,,YES
+SF3B4,"RRM 1, RRM 2",Multi,RRM,,YES
+SFPQ,"RRM 1, RRM 2",Multi,RRM,,YES
+SLBP,,,,,YES
+SLTM,"SAP, RRM",Mixed,RRM,SAP,YES
+SMNDC1,Tudor,,,Tudor,
+SND1,"TNase-like 1, TNase-like 2, TNase-like 3, TNase-like 4, Tudor",,,Tudor,
+SRSF1,"RRM 1, RRM 2",Multi,RRM,,YES
+SRSF7,RRM,Single,RRM,,YES
+SRSF9,"RRM 1, RRM 2",Multi,RRM,,YES
+SSB,"HTH La-type RNA-binding, RRM, xRRM",Mixed,RRM,HTH La-type RNA-binding,YES
+STAU2,"DRBM 1, DRBM 2, DRBM 3, DRBM 4",Multi,dsRBM,,YES
+SUB1,,,,,YES
+SUGP2,G-patch,,,G-Patch,YES
+SUPV3L1,"Helicase ATP-binding, Helicase C-terminal",Single,Helicase,,YES
+TAF15,RRM,Single,RRM,,YES
+TARDBP,"RRM 1, RRM 2",Multi,RRM,,YES
+TBRG4,RAP,,,RAP,
+TIA1,"RRM 1, RRM 2, RRM 3",Multi,RRM,,YES
+TIAL1,"RRM 1, RRM 2, RRM 3",Multi,RRM,,YES
+TRA2A,RRM,Single,RRM,,YES
+TROVE2,TROVE,,,TROVE,
+U2AF1,RRM,Single,RRM,,YES
+U2AF2,"RRM 1, RRM 2, RRM 3",Multi,RRM,,YES
+UCHL5,"UCH catalytic, ULD",,,Other,
+UPF1,Upf1 CH-rich,,,Other,YES
+UTP18,,,,,YES
+UTP3,,,,,YES
+WDR3,,,,,YES
+WDR43,,,,,YES
+WRN,"3'-5' exonuclease, Helicase ATP-binding, Helicase C-terminal, HRDC",Single,Helicase,,YES
+XPO5,,,,,
+XRCC6,"Ku, SAP",,,SAP,YES
+XRN2,,,,,YES
+YBX3,CSD,,,CSD,YES
+YWHAG,,,,,
+ZC3H11A,,,,,YES
+ZC3H8,,,,,YES
+ZNF622,,,,,YES
+ZNF800,,,,,YES
+ZRANB2,,,,,YES
