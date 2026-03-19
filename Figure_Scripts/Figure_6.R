@@ -10,6 +10,7 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 library(ggsignif)
+library(ggrepel)
 
 ## Set up basic parameters:
 ################################################################################
@@ -54,10 +55,15 @@ eCLIP_summary$CVS = ifelse(!is.na(eCLIP_summary$VS_avg), eCLIP_summary$VS_avg,
 # Filter for RBPs with data in both cell lines:
 both_cells = eCLIP_summary %>% filter(!is.na(IS_K562) & !is.na(IS_HepG2))
 
+# Merge RBNS IS for coloring:
+both_cells = merge(both_cells, RBNS_metrics[, c('RBP', 'IS')], by = 'RBP', all.x = TRUE)
+colnames(both_cells)[colnames(both_cells) == 'IS'] = 'RBNS_IS'
+
 Corr_CS = cor(both_cells$IS_K562, both_cells$IS_HepG2, method = 'pearson')
 
-ggplot(both_cells, aes(x = IS_K562, y = IS_HepG2)) +
-  geom_point(fill = 'cornflowerblue', alpha = 1, shape = 21, size = 4) +
+ggplot(both_cells, aes(x = IS_K562, y = IS_HepG2, fill = (RBNS_IS))) +
+  geom_point(alpha = 1, shape = 21, size = 4) +
+  scale_fill_viridis_c(name = 'RBNS IS', na.value = 'grey70', option = 'viridis') +
   geom_smooth(method = 'lm', linetype = 'solid', color = 'cornflowerblue',
               se = FALSE, linewidth = 0.5, alpha = 0.1) +
   geom_abline(slope = 1, intercept = 0, linetype = 'dashed', color = 'grey50') +
@@ -415,6 +421,14 @@ domains_only %>%
 domain_summary = domains_only %>% count(description, sort = TRUE)
 print(domain_summary)
 
+# Per-RBP domain table:
+domain_per_rbp = domains_only %>%
+  group_by(gene) %>%
+  summarise(Domains = paste(description, collapse = ', '), .groups = 'drop') %>%
+  dplyr::rename(RBP = gene)
+View(domain_per_rbp)
+
+
 # View functional annotation categories:
 annotation_results %>% count(category, sort = TRUE) %>% print()
 
@@ -447,6 +461,150 @@ keyword_summary = annotation_results %>%
   dplyr::select(RBP, Cellular_Component, Biological_Process,
                 Molecular_Function, Disease, Function)
 View(keyword_summary)
+################################################################################
 
+## Meta Summary Table:
+################################################################################
+# Load RBNS enrichment data for top motifs:
+RBNS_enrich = read_csv(paste0(baseDir, 'RBNS/RBNS_normalized_', K, 'mer.csv'),
+                       col_names = TRUE, show_col_types = FALSE)
+RBNS_enrich = data.frame(RBNS_enrich)
+RBNS_RBPs = colnames(RBNS_enrich)[2:ncol(RBNS_enrich)]
 
+# Helper: get top N motifs as comma-separated string:
+get_top_motifs = function(motifs, scores, N = 10) {
+  idx = order(scores, decreasing = TRUE)[1:min(N, length(scores))]
+  paste(motifs[idx], collapse = ', ')
+}
+
+# Get RBNS top 10 motifs per RBP:
+rbns_top10 = data.frame(RBP = RBNS_RBPs, Top10_Motif_RBNS = NA_character_,
+                        stringsAsFactors = FALSE)
+for (i in seq_along(RBNS_RBPs)) {
+  rbp = RBNS_RBPs[i]
+  rbns_top10$Top10_Motif_RBNS[i] = get_top_motifs(RBNS_enrich$Motif,
+                                                    RBNS_enrich[[rbp]])
+}
+
+# Get eCLIP top 10 motifs per RBP (use averaged enrichment if both cell lines):
+eCLIP_RBPs = unique(eCLIP_summary$RBP)
+eCLIP_top10 = data.frame(RBP = eCLIP_RBPs, Top10_Motif_eCLIP = NA_character_,
+                         stringsAsFactors = FALSE)
+eCLIP_enrichDir = paste0(baseDir, 'eCLIP_all/output/', DATE, '/')
+extension = 25
+
+for (i in seq_along(eCLIP_RBPs)) {
+  rbp = eCLIP_RBPs[i]
+  has_K562 = !is.na(eCLIP_summary$IS_K562[eCLIP_summary$RBP == rbp])
+  has_HepG2 = !is.na(eCLIP_summary$IS_HepG2[eCLIP_summary$RBP == rbp])
+
+  enrich_data = NULL
+
+  if (has_K562 && has_HepG2) {
+    # Average both cell lines:
+    K562_file = paste0(eCLIP_enrichDir, 'K562_eCLIP_Enrichment_', rbp, '_', K, 'mer.csv')
+    HepG2_file = paste0(eCLIP_enrichDir, 'HepG2_eCLIP_Enrichment_', rbp, '_', K, 'mer.csv')
+    if (file.exists(K562_file) && file.exists(HepG2_file)) {
+      K562_data = read_csv(K562_file, col_names = TRUE, show_col_types = FALSE)
+      HepG2_data = read_csv(HepG2_file, col_names = TRUE, show_col_types = FALSE)
+      K562_data = K562_data %>% arrange(MOTIF)
+      HepG2_data = HepG2_data %>% arrange(MOTIF)
+      enrich_data = data.frame(MOTIF = K562_data$MOTIF,
+                               Score = (K562_data$Score + HepG2_data$Score) / 2)
+    }
+  } else if (has_K562) {
+    K562_file = paste0(eCLIP_enrichDir, 'K562_eCLIP_Enrichment_', rbp, '_', K, 'mer.csv')
+    if (file.exists(K562_file)) {
+      enrich_data = read_csv(K562_file, col_names = TRUE, show_col_types = FALSE)
+    }
+  } else if (has_HepG2) {
+    HepG2_file = paste0(eCLIP_enrichDir, 'HepG2_eCLIP_Enrichment_', rbp, '_', K, 'mer.csv')
+    if (file.exists(HepG2_file)) {
+      enrich_data = read_csv(HepG2_file, col_names = TRUE, show_col_types = FALSE)
+    }
+  }
+
+  if (!is.null(enrich_data)) {
+    enrich_data$MOTIF = gsub('T', 'U', enrich_data$MOTIF)
+    eCLIP_top10$Top10_Motif_eCLIP[i] = get_top_motifs(enrich_data$MOTIF,
+                                                       enrich_data$Score)
+  }
+}
+
+# Compile meta table:
+# Load domain summary:
+domain_info = read_csv(paste0(baseDir, 'eCLIP_all/output/RBP_Domain_Summary.csv'),
+                       col_names = TRUE, show_col_types = FALSE)
+domain_info = data.frame(domain_info)
+domain_info[] = lapply(domain_info, function(x) {
+  if (is.character(x)) gsub('\u00A0', ' ', x) else x
+})
+
+meta_table = eCLIP_summary %>%
+  dplyr::select(RBP, CS, CVS) %>%
+  merge(RBNS_metrics, by = 'RBP', all = TRUE) %>%
+  merge(rbns_top10, by = 'RBP', all.x = TRUE) %>%
+  merge(eCLIP_top10, by = 'RBP', all.x = TRUE) %>%
+  merge(domain_info, by = 'RBP', all.x = TRUE) %>%
+  mutate(idx = match(RBP, eCLIP_summary$RBP),
+         RBNS = ifelse(!is.na(IS), 'Yes', 'No'),
+         eCLIP = ifelse(!is.na(CS), 'Yes', 'No'),
+         K562 = ifelse(!is.na(idx) & !is.na(eCLIP_summary$IS_K562[idx]),
+                       'Yes', 'No'),
+         HepG2 = ifelse(!is.na(idx) & !is.na(eCLIP_summary$IS_HepG2[idx]),
+                        'Yes', 'No')) %>%
+  dplyr::select(RBP, RBNS, eCLIP, IS, VS, Top10_Motif_RBNS, CS, CVS, Top10_Motif_eCLIP,
+                K562, HepG2, Domains, Architecture, Primary, Other)
+
+View(meta_table)
+write.csv(meta_table, paste0(baseDir, '5mer_MetaAnalysis_Output.csv'), row.names = FALSE, na = '')
+################################################################################
+
+## SR vs HNRNP IS and VS Comparison:
+################################################################################
+SR_proteins = c('SRSF2', 'SRSF4', 'SRSF5', 'SRSF8', 'SRSF9', 'SRSF10', 'SRSF11')
+HNRNP_proteins = c('HNRNPA0', 'HNRNPA2B1', 'HNRNPC', 'HNRNPCL1', 'HNRNPD0',
+                   'HNRNPDL', 'HNRNPF', 'HNRNPH2', 'HNRNPK', 'HNRNPL')
+
+SR_HNRNP = RBNS_metrics %>%
+  filter(RBP %in% c(SR_proteins, HNRNP_proteins)) %>%
+  mutate(Family = ifelse(RBP %in% SR_proteins, 'SR', 'HNRNP'))
+
+## IS Boxplot:
+pos_jitter = position_jitter(width = 0.1, seed = 42)
+ggplot(SR_HNRNP, aes(x = Family, y = IS, label = RBP)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter, size = 3, alpha = 1) +
+  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
+  labs(x = 'Protein Family',
+       y = 'Inherent Specificity',
+       title = 'IS: SR vs HNRNP (RBNS 5-mer)') +
+  theme_bw() +
+  theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 14)) +
+  geom_signif(comparisons = list(c('HNRNP', 'SR')),
+              test = 'wilcox.test',
+              map_signif_level = FALSE,
+              textsize = 5, tip_length = 0.01)
+
+## VS Boxplot:
+pos_jitter = position_jitter(width = 0.1, seed = 42)
+ggplot(SR_HNRNP, aes(x = Family, y = VS, label = RBP)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter, size = 3, alpha = 1) +
+  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
+  labs(x = 'Protein Family',
+       y = 'Variation Sensitivity',
+       title = 'VS: SR vs HNRNP (RBNS 5-mer)') +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 14)) +
+  geom_signif(comparisons = list(c('HNRNP', 'SR')),
+              test = 'wilcox.test',
+              map_signif_level = FALSE,
+              textsize = 5, y_position = 0.95, tip_length = 0.01)
 ################################################################################
