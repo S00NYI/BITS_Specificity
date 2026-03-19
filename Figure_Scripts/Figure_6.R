@@ -82,10 +82,15 @@ ggplot(both_cells, aes(x = IS_K562, y = IS_HepG2, fill = (RBNS_IS))) +
 
 ## Panel 1B: K562 vs HepG2 Cellular Variation Sensitivity:
 ################################################################################
+# Merge RBNS VS for coloring:
+both_cells = merge(both_cells, RBNS_metrics[, c('RBP', 'VS')], by = 'RBP', all.x = TRUE)
+colnames(both_cells)[colnames(both_cells) == 'VS'] = 'RBNS_VS'
+
 Corr_CVS = cor(both_cells$VS_K562, both_cells$VS_HepG2, method = 'pearson')
 
-ggplot(both_cells, aes(x = VS_K562, y = VS_HepG2)) +
-  geom_point(fill = 'darkgoldenrod1', alpha = 1, shape = 21, size = 4) +
+ggplot(both_cells, aes(x = VS_K562, y = VS_HepG2, fill = RBNS_VS)) +
+  geom_point(alpha = 1, shape = 21, size = 4) +
+  scale_fill_viridis_c(name = 'RBNS VS', na.value = 'grey70', option = 'viridis') +
   geom_smooth(method = 'lm', linetype = 'solid', color = 'darkgoldenrod1',
               se = FALSE, linewidth = 0.5, alpha = 0.1) +
   geom_abline(slope = 1, intercept = 0, linetype = 'dashed', color = 'grey50') +
@@ -205,8 +210,8 @@ eCLIP_rep = eCLIP_summary %>% filter(!is.na(CS) & !is.na(CVS))
 Corr_CS_CVS = cor(eCLIP_rep$CS, eCLIP_rep$CVS, method = 'pearson')
 
 ggplot(eCLIP_rep, aes(x = CS, y = CVS)) +
-  geom_point(fill = 'cornflowerblue', alpha = 1, shape = 21, size = 4) +
-  geom_smooth(method = 'lm', linetype = 'solid', color = 'cornflowerblue',
+  geom_point(fill = 'grey', alpha = 1, shape = 21, size = 4) +
+  geom_smooth(method = 'lm', linetype = 'solid', color = 'grey',
               se = FALSE, linewidth = 0.5, alpha = 0.1) +
   labs(x = 'Cellular Specificity',
        y = 'Cellular Variation Sensitivity',
@@ -219,7 +224,7 @@ ggplot(eCLIP_rep, aes(x = CS, y = CVS)) +
         axis.title = element_text(size = 14, face = 'bold'),
         legend.text = element_text(size = 14)) +
   annotate('text', x = Inf, y = 0.1, label = sprintf('R = %.2f', Corr_CS_CVS),
-           hjust = 1.1, vjust = 0, size = 5, color = 'cornflowerblue')
+           hjust = 1.1, vjust = 0, size = 5, color = 'black')
 ################################################################################
 
 ## Panel 4: Unconventional vs Conventional RBP Boxplots:
@@ -256,7 +261,7 @@ ggplot(eCLIP_rep, aes(x = Type, y = CVS)) +
   labs(x = 'RBP Type',
        y = 'Cellular Variation Sensitivity',
        title = 'Cellular Variation Sensitivity: Unconventional vs Conventional') +
-  scale_y_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
   theme_bw() +
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 14, face = 'bold'),
@@ -266,6 +271,56 @@ ggplot(eCLIP_rep, aes(x = Type, y = CVS)) +
               map_signif_level = FALSE,
               textsize = 5, y_position = 0.95, tip_length = 0.01)
 ################################################################################
+
+## Panel 5: SR vs HNRNP IS and VS Comparison:
+################################################################################
+SR_proteins = c('SRSF2', 'SRSF4', 'SRSF5', 'SRSF8', 'SRSF9', 'SRSF10', 'SRSF11')
+HNRNP_proteins = c('HNRNPA0', 'HNRNPA2B1', 'HNRNPC', 'HNRNPCL1', 'HNRNPD0',
+                   'HNRNPDL', 'HNRNPF', 'HNRNPH2', 'HNRNPK', 'HNRNPL')
+
+SR_HNRNP = RBNS_metrics %>%
+  filter(RBP %in% c(SR_proteins, HNRNP_proteins)) %>%
+  mutate(Family = ifelse(RBP %in% SR_proteins, 'SR', 'HNRNP'))
+
+## IS Boxplot:
+pos_jitter = position_jitter(width = 0.1, seed = 42)
+ggplot(SR_HNRNP, aes(x = Family, y = IS, label = RBP)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter, size = 3, alpha = 1) +
+  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
+  labs(x = 'Protein Family',
+       y = 'Inherent Specificity',
+       title = 'IS: SR vs HNRNP (RBNS 5-mer)') +
+  theme_bw() +
+  theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 14)) +
+  geom_signif(comparisons = list(c('HNRNP', 'SR')),
+              test = 'wilcox.test',
+              map_signif_level = FALSE,
+              textsize = 5, tip_length = 0.01)
+
+## VS Boxplot:
+pos_jitter = position_jitter(width = 0.1, seed = 42)
+ggplot(SR_HNRNP, aes(x = Family, y = VS, label = RBP)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter, size = 3, alpha = 1) +
+  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
+  labs(x = 'Protein Family',
+       y = 'Variation Sensitivity',
+       title = 'VS: SR vs HNRNP (RBNS 5-mer)') +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 14)) +
+  geom_signif(comparisons = list(c('HNRNP', 'SR')),
+              test = 'wilcox.test',
+              map_signif_level = FALSE,
+              textsize = 5, y_position = 0.95, tip_length = 0.01)
+################################################################################
+
 
 ## UniProt Domain and Functional Annotation for eCLIP RBPs:
 ################################################################################
@@ -413,32 +468,14 @@ annotation_results = do.call(rbind, all_annotations)
 # Filter to Domain-type annotations:
 domains_only = domain_results %>% filter(type == 'Domain')
 
-domains_only %>%
-  select(gene, accession, description, start, end) %>%
-  print()
-
 # Summarize domain types:
 domain_summary = domains_only %>% count(description, sort = TRUE)
-print(domain_summary)
 
 # Per-RBP domain table:
 domain_per_rbp = domains_only %>%
   group_by(gene) %>%
   summarise(Domains = paste(description, collapse = ', '), .groups = 'drop') %>%
   dplyr::rename(RBP = gene)
-View(domain_per_rbp)
-
-
-# View functional annotation categories:
-annotation_results %>% count(category, sort = TRUE) %>% print()
-
-# View GO Molecular Function terms:
-annotation_results %>% filter(category == 'GO_Molecular_Function') %>%
-  select(gene, value) %>% print()
-
-# View Subcellular Location:
-annotation_results %>% filter(category == 'Subcellular_Location') %>%
-  select(gene, value) %>% print()
 
 # Keyword Summary 
 keyword_summary = annotation_results %>%
@@ -460,7 +497,6 @@ keyword_summary = annotation_results %>%
   dplyr::rename(RBP = gene) %>%
   dplyr::select(RBP, Cellular_Component, Biological_Process,
                 Molecular_Function, Disease, Function)
-View(keyword_summary)
 ################################################################################
 
 ## Meta Summary Table:
@@ -532,20 +568,22 @@ for (i in seq_along(eCLIP_RBPs)) {
 }
 
 # Compile meta table:
-# Load domain summary:
-domain_info = read_csv(paste0(baseDir, 'eCLIP_all/output/RBP_Domain_Summary.csv'),
-                       col_names = TRUE, show_col_types = FALSE)
-domain_info = data.frame(domain_info)
-domain_info[] = lapply(domain_info, function(x) {
+# Load RBP Domain Summary:
+rbd_info = read_csv(paste0(baseDir, 'eCLIP_all/output/eCLIP_RBPs_Uniprot_RBD_Table.csv'),
+                    col_names = TRUE, show_col_types = FALSE)
+rbd_info = data.frame(rbd_info)
+rbd_info[] = lapply(rbd_info, function(x) {
   if (is.character(x)) gsub('\u00A0', ' ', x) else x
 })
+# Rename columns for easy use in R:
+colnames(rbd_info) = c('RBP', 'Domains', 'Domain_Architecture', 'Primary_RBD', 'Other_Domains', 'Disordered_Regions')
 
 meta_table = eCLIP_summary %>%
   dplyr::select(RBP, CS, CVS) %>%
   merge(RBNS_metrics, by = 'RBP', all = TRUE) %>%
   merge(rbns_top10, by = 'RBP', all.x = TRUE) %>%
   merge(eCLIP_top10, by = 'RBP', all.x = TRUE) %>%
-  merge(domain_info, by = 'RBP', all.x = TRUE) %>%
+  merge(rbd_info, by = 'RBP', all.x = TRUE) %>%
   mutate(idx = match(RBP, eCLIP_summary$RBP),
          RBNS = ifelse(!is.na(IS), 'Yes', 'No'),
          eCLIP = ifelse(!is.na(CS), 'Yes', 'No'),
@@ -553,58 +591,138 @@ meta_table = eCLIP_summary %>%
                        'Yes', 'No'),
          HepG2 = ifelse(!is.na(idx) & !is.na(eCLIP_summary$IS_HepG2[idx]),
                         'Yes', 'No')) %>%
-  dplyr::select(RBP, RBNS, eCLIP, IS, VS, Top10_Motif_RBNS, CS, CVS, Top10_Motif_eCLIP,
-                K562, HepG2, Domains, Architecture, Primary, Other)
+  dplyr::select(RBP, RBNS, eCLIP, IS, VS, Top10_Motif_RBNS, CS, CVS, Top10_Motif_eCLIP, K562, HepG2,
+                Domains, Domain_Architecture, Primary_RBD, Other_Domains, Disordered_Regions)
 
-View(meta_table)
 write.csv(meta_table, paste0(baseDir, '5mer_MetaAnalysis_Output.csv'), row.names = FALSE, na = '')
 ################################################################################
 
-## SR vs HNRNP IS and VS Comparison:
+## Panel 6: CS and CVS Boxplots by RBP Domain Categorizations
 ################################################################################
-SR_proteins = c('SRSF2', 'SRSF4', 'SRSF5', 'SRSF8', 'SRSF9', 'SRSF10', 'SRSF11')
-HNRNP_proteins = c('HNRNPA0', 'HNRNPA2B1', 'HNRNPC', 'HNRNPCL1', 'HNRNPD0',
-                   'HNRNPDL', 'HNRNPF', 'HNRNPH2', 'HNRNPK', 'HNRNPL')
+# Merge domain info into eCLIP_rep if not already present
+if (!'Primary_RBD' %in% colnames(eCLIP_rep)) {
+  eCLIP_rep = merge(eCLIP_rep, rbd_info, by = 'RBP', all.x = TRUE)
+}
 
-SR_HNRNP = RBNS_metrics %>%
-  filter(RBP %in% c(SR_proteins, HNRNP_proteins)) %>%
-  mutate(Family = ifelse(RBP %in% SR_proteins, 'SR', 'HNRNP'))
+# 1) Primary classification
+eCLIP_rep = eCLIP_rep %>%
+  mutate(Primary_Classification = case_when(
+    RBP %in% c('IGF2BP1', 'IGF2BP2', 'IGF2BP3') ~ 'RRM',
+    RBP == 'DDX43' ~ 'Helicase',
+    grepl('RRM', Primary_RBD) ~ 'RRM',
+    grepl('KH', Primary_RBD) ~ 'KH',
+    grepl('Helicase', Primary_RBD) ~ 'Helicase',
+    grepl('dsRBM', Primary_RBD) ~ 'dsRBD',
+    TRUE ~ ifelse(!is.na(Disordered_Regions) & grepl('YES', Disordered_Regions), 
+                  'Others (Disordered)', 'Others (No Disordered Regions)')
+  ))
 
-## IS Boxplot:
-pos_jitter = position_jitter(width = 0.1, seed = 42)
-ggplot(SR_HNRNP, aes(x = Family, y = IS, label = RBP)) +
+# Ensure factor order for plotting x-axis
+eCLIP_rep$Primary_Classification = factor(eCLIP_rep$Primary_Classification, 
+                                          levels = c('RRM', 'KH', 'Helicase', 'dsRBD', 
+                                                     'Others (Disordered)', 'Others (No Disordered Regions)'))
+
+# 2) Secondary classification (Shape)
+eCLIP_rep = eCLIP_rep %>%
+  mutate(Shape_Class = case_when(
+    grepl('Others', Primary_Classification) ~ 'Others',
+    !is.na(Domain_Architecture) & Domain_Architecture == 'Single' ~ 'Single',
+    !is.na(Domain_Architecture) & Domain_Architecture == 'Multi' ~ 'Multi',
+    !is.na(Domain_Architecture) & Domain_Architecture == 'Mixed' ~ 'Mixed',
+    TRUE ~ 'Others'
+  ))
+
+eCLIP_rep$Shape_Class = factor(eCLIP_rep$Shape_Class, levels = c('Single', 'Multi', 'Mixed', 'Others'))
+
+# Define shapes: 16 = circle, 15 = square(rectangle), 17 = triangle, 18 = diamond
+shape_mapping = c('Single' = 16, 'Multi' = 15, 'Mixed' = 17, 'Others' = 18)
+
+## Panel 6A: CS Boxplot by Domain
+kw_cs = kruskal.test(CS ~ Primary_Classification, data = eCLIP_rep)
+pos_dodge_jitter = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.75, seed = 42)
+ggplot(eCLIP_rep, aes(x = Primary_Classification, y = CS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
-  geom_point(position = pos_jitter, size = 3, alpha = 1) +
-  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
+  geom_point(data = subset(eCLIP_rep, !grepl('Others', Primary_Classification)),
+             aes(shape = Shape_Class, fill = Shape_Class, group = Shape_Class), 
+             position = pos_dodge_jitter, size = 3, alpha = 0.7) +
+  geom_point(data = subset(eCLIP_rep, grepl('Others', Primary_Classification)),
+             aes(shape = Shape_Class, fill = Shape_Class), 
+             position = position_jitter(width = 0.2, seed = 42), size = 3, alpha = 0.7) +
+  scale_shape_manual(values = shape_mapping) +
+  labs(x = 'Primary RBD Classification',
+       y = 'Cellular Specificity',
+       title = 'CS: Domain Categorizations',
+       shape = 'Domain Architecture') +
   scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
-  labs(x = 'Protein Family',
-       y = 'Inherent Specificity',
-       title = 'IS: SR vs HNRNP (RBNS 5-mer)') +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 12)) +
+  annotate('text', x = Inf, y = 64, label = sprintf('K-W p = %.2e', kw_cs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
+
+## Panel 6B: CVS Boxplot by Domain
+kw_cvs = kruskal.test(CVS ~ Primary_Classification, data = eCLIP_rep)
+ggplot(eCLIP_rep, aes(x = Primary_Classification, y = CVS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(data = subset(eCLIP_rep, !grepl('Others', Primary_Classification)),
+             aes(shape = Shape_Class, fill = Shape_Class, group = Shape_Class), 
+             position = pos_dodge_jitter, size = 3, alpha = 0.7) +
+  geom_point(data = subset(eCLIP_rep, grepl('Others', Primary_Classification)),
+             aes(shape = Shape_Class, fill = Shape_Class), 
+             position = position_jitter(width = 0.2, seed = 42), size = 3, alpha = 0.7) +
+  scale_shape_manual(values = shape_mapping) +
+  labs(x = 'Primary RBD Classification',
+       y = 'Cellular Variation Sensitivity',
+       title = 'C-VS: Domain Categorizations',
+       shape = 'Domain Architecture') +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title = element_text(size = 14, face = 'bold'),
+        legend.text = element_text(size = 12)) +
+  annotate('text', x = Inf, y = 1.0, label = sprintf('K-W p = %.2e', kw_cvs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
+################################################################################
+
+## Panel 7: CS and CVS Boxplots by Disordered Regions (All RBPs)
+################################################################################
+eCLIP_rep = eCLIP_rep %>%
+  mutate(Disordered_All = ifelse(!is.na(Disordered_Regions) & grepl('YES', Disordered_Regions), 
+                                 'Disordered', 'No Disordered Regions'))
+
+eCLIP_rep$Disordered_All = factor(eCLIP_rep$Disordered_All, levels = c('No Disordered Regions', 'Disordered'))
+
+## Panel 7A: CS Boxplot by Disordered Regions
+ggplot(eCLIP_rep, aes(x = Disordered_All, y = CS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_jitter(width = 0.1, size = 3, alpha = 0.7) +
+  labs(x = 'Disordered Regions',
+       y = 'Cellular Specificity',
+       title = 'CS: Disordered vs No Disordered Regions (All RBPs)') +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
   theme_bw() +
   theme(axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 14)) +
-  geom_signif(comparisons = list(c('HNRNP', 'SR')),
-              test = 'wilcox.test',
-              map_signif_level = FALSE,
+        axis.title = element_text(size = 14, face = 'bold')) +
+  geom_signif(comparisons = list(c('No Disordered Regions', 'Disordered')),
+              test = 'wilcox.test', map_signif_level = FALSE,
               textsize = 5, tip_length = 0.01)
 
-## VS Boxplot:
-pos_jitter = position_jitter(width = 0.1, seed = 42)
-ggplot(SR_HNRNP, aes(x = Family, y = VS, label = RBP)) +
+## Panel 7B: CVS Boxplot by Disordered Regions
+ggplot(eCLIP_rep, aes(x = Disordered_All, y = CVS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
-  geom_point(position = pos_jitter, size = 3, alpha = 1) +
-  geom_text_repel(position = pos_jitter, size = 3, max.overlaps = 20) +
-  labs(x = 'Protein Family',
-       y = 'Variation Sensitivity',
-       title = 'VS: SR vs HNRNP (RBNS 5-mer)') +
-  scale_y_continuous(limits = c(0, 1)) +
+  geom_jitter(width = 0.1, size = 3, alpha = 0.7) +
+  labs(x = 'Disordered Regions',
+       y = 'Cellular Variation Sensitivity',
+       title = 'C-VS: Disordered vs No Disordered Regions (All RBPs)') +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
   theme_bw() +
   theme(axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 14)) +
-  geom_signif(comparisons = list(c('HNRNP', 'SR')),
-              test = 'wilcox.test',
-              map_signif_level = FALSE,
+        axis.title = element_text(size = 14, face = 'bold')) +
+  geom_signif(comparisons = list(c('No Disordered Regions', 'Disordered')),
+              test = 'wilcox.test', map_signif_level = FALSE,
               textsize = 5, y_position = 0.95, tip_length = 0.01)
 ################################################################################
+
