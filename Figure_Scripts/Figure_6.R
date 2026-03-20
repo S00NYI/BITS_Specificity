@@ -778,6 +778,8 @@ eCLIP_rep$Disordered_Class = factor(eCLIP_rep$Disordered_Class, levels = c('No D
 
 ## Graph C: Primary RBD (5 bars)
 pos_jitter_new = position_jitter(width = 0.2, seed = 42)
+kw_C_cs = kruskal.test(CS ~ Primary_Class, data = eCLIP_rep)
+kw_C_cvs = kruskal.test(CVS ~ Primary_Class, data = eCLIP_rep)
 
 ggplot(eCLIP_rep, aes(x = Primary_Class, y = CS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
@@ -786,7 +788,9 @@ ggplot(eCLIP_rep, aes(x = Primary_Class, y = CS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Primary RBD', y = 'Cellular Specificity', title = 'Graph C: Primary RBD (CS)') +
   scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 64, label = sprintf('K-W p = %.2e', kw_C_cs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
 
 ggplot(eCLIP_rep, aes(x = Primary_Class, y = CVS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
@@ -795,10 +799,14 @@ ggplot(eCLIP_rep, aes(x = Primary_Class, y = CVS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Primary RBD', y = 'Cellular Variation Sensitivity', title = 'Graph C: Primary RBD (C-VS)') +
   scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 1.0, label = sprintf('K-W p = %.2e', kw_C_cvs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
 
 ## Graph D: Domain Architecture (3 bars)
 d_data = subset(eCLIP_rep, !is.na(Arch_Class))
+kw_D_cs = kruskal.test(CS ~ Arch_Class, data = d_data)
+kw_D_cvs = kruskal.test(CVS ~ Arch_Class, data = d_data)
 
 ggplot(d_data, aes(x = Arch_Class, y = CS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
@@ -807,7 +815,11 @@ ggplot(d_data, aes(x = Arch_Class, y = CS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Domain Architecture', y = 'Cellular Specificity', title = 'Graph D: Domain Architecture (CS)') +
   scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 64, label = sprintf('K-W p = %.2e', kw_D_cs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold') +
+  geom_signif(comparisons = list(c('Single', 'Mixed')), annotations = "adj. p = 0.041",
+              y_position = 50, textsize = 4, tip_length = 0.01, vjust = 0)
 
 ggplot(d_data, aes(x = Arch_Class, y = CVS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
@@ -816,9 +828,14 @@ ggplot(d_data, aes(x = Arch_Class, y = CVS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Domain Architecture', y = 'Cellular Variation Sensitivity', title = 'Graph D: Domain Architecture (C-VS)') +
   scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 1.0, label = sprintf('K-W p = %.2e', kw_D_cvs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
 
 ## Graph E: Disordered Regions (2 bars)
+wx_E_cs = wilcox.test(CS ~ Disordered_Class, data = eCLIP_rep)
+wx_E_cvs = wilcox.test(CVS ~ Disordered_Class, data = eCLIP_rep)
+
 ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
   geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
@@ -826,7 +843,9 @@ ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Disordered Regions', y = 'Cellular Specificity', title = 'Graph E: Disordered Regions (CS)') +
   scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 64, label = sprintf('Wilcox p = %.2e', wx_E_cs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
 
 ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CVS)) +
   geom_boxplot(notch = FALSE, outlier.shape = NA) +
@@ -835,5 +854,7 @@ ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CVS)) +
                   min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
   labs(x = 'Disordered Regions', y = 'Cellular Variation Sensitivity', title = 'Graph E: Disordered Regions (C-VS)') +
   scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
-  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold')) +
+  annotate('text', x = Inf, y = 1.0, label = sprintf('Wilcox p = %.2e', wx_E_cvs$p.value),
+           hjust = 1.1, vjust = 1.5, size = 5, fontface = 'bold')
 ################################################################################
