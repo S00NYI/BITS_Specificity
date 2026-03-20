@@ -207,22 +207,30 @@ ggplot(both_cells_CVS, aes(x = RBP, y = FC_CVS_K562_HepG2)) +
 # Use representative values (already computed above):
 eCLIP_rep = eCLIP_summary %>% filter(!is.na(CS) & !is.na(CVS))
 
+# Identify trendline outliers using standard residuals
+trend_model <- lm(CVS ~ log2(CS), data = eCLIP_rep)
+eCLIP_rep$Trend_Residual <- rstandard(trend_model)
+eCLIP_rep$Trend_Outlier <- abs(eCLIP_rep$Trend_Residual) > 2
+
 Corr_CS_CVS = cor(eCLIP_rep$CS, eCLIP_rep$CVS, method = 'pearson')
 
 ggplot(eCLIP_rep, aes(x = CS, y = CVS)) +
-  geom_point(fill = 'grey', alpha = 1, shape = 21, size = 4) +
+  geom_point(aes(fill = Trend_Outlier), alpha = 1, shape = 21, size = 4) +
+  scale_fill_manual(values = c("FALSE" = "grey", "TRUE" = "red")) +
   geom_smooth(method = 'lm', linetype = 'solid', color = 'grey',
               se = FALSE, linewidth = 0.5, alpha = 0.1) +
+  geom_text_repel(data = subset(eCLIP_rep, Trend_Outlier), aes(label = RBP), 
+                  size = 3, box.padding = 0.8, min.segment.length = 0, segment.color = 'grey50', max.overlaps = 50) +
   labs(x = 'Cellular Specificity',
        y = 'Cellular Variation Sensitivity',
        title = 'CS vs C-VS Correlation (All eCLIP)') +
-  # scale_x_continuous() +
   scale_x_continuous(trans = 'log2', limits = c(1, 30)) +
   scale_y_continuous(limits = c(0, 1)) +
   theme_bw() +
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 14, face = 'bold'),
         legend.text = element_text(size = 14)) +
+  guides(fill = "none") +
   annotate('text', x = Inf, y = 0.1, label = sprintf('R = %.2f', Corr_CS_CVS),
            hjust = 1.1, vjust = 0, size = 5, color = 'black')
 ################################################################################
@@ -726,3 +734,106 @@ ggplot(eCLIP_rep, aes(x = Disordered_All, y = CVS)) +
               textsize = 5, y_position = 0.95, tip_length = 0.01)
 ################################################################################
 
+## New Panels (Graph C, D, E): Domain Comparisons with Outlier Labeling
+################################################################################
+# Helper function to find boxplot outliers
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25, na.rm=TRUE) - 1.5 * IQR(x, na.rm=TRUE) | 
+         x > quantile(x, 0.75, na.rm=TRUE) + 1.5 * IQR(x, na.rm=TRUE))
+}
+
+eCLIP_rep = eCLIP_rep %>%
+  mutate(
+    # Graph C: Primary RBD (5 Categories)
+    Primary_Class = case_when(
+      RBP %in% c('IGF2BP1', 'IGF2BP2', 'IGF2BP3') ~ 'RRM',
+      RBP == 'DDX43' ~ 'Helicase',
+      grepl('RRM', Primary_RBD) ~ 'RRM',
+      grepl('KH', Primary_RBD) ~ 'KH',
+      grepl('Helicase', Primary_RBD) ~ 'Helicase',
+      grepl('dsRBM', Primary_RBD) ~ 'dsRBD',
+      TRUE ~ 'Others'
+    ),
+    # Graph D: Domain Architecture (3 Categories)
+    Arch_Class = case_when(
+      Domain_Architecture %in% c('Single', 'Multi', 'Mixed') ~ Domain_Architecture,
+      TRUE ~ NA_character_
+    ),
+    # Graph E: Disordered Regions (2 Categories)
+    Disordered_Class = ifelse(!is.na(Disordered_Regions) & grepl('YES', Disordered_Regions), 
+                              'Disordered', 'No Disordered Regions')
+  ) %>%
+  # Calculate outliers per group for labeling
+  group_by(Primary_Class) %>%
+  mutate(Outlier_C_CS = is_outlier(log2(CS)), Outlier_C_CVS = is_outlier(CVS)) %>%
+  group_by(Arch_Class) %>%
+  mutate(Outlier_D_CS = is_outlier(log2(CS)), Outlier_D_CVS = is_outlier(CVS)) %>%
+  group_by(Disordered_Class) %>%
+  mutate(Outlier_E_CS = is_outlier(log2(CS)), Outlier_E_CVS = is_outlier(CVS)) %>%
+  ungroup()
+
+eCLIP_rep$Primary_Class = factor(eCLIP_rep$Primary_Class, levels = c('RRM', 'KH', 'Helicase', 'dsRBD', 'Others'))
+eCLIP_rep$Arch_Class = factor(eCLIP_rep$Arch_Class, levels = c('Single', 'Multi', 'Mixed'))
+eCLIP_rep$Disordered_Class = factor(eCLIP_rep$Disordered_Class, levels = c('No Disordered Regions', 'Disordered'))
+
+## Graph C: Primary RBD (5 bars)
+pos_jitter_new = position_jitter(width = 0.2, seed = 42)
+
+ggplot(eCLIP_rep, aes(x = Primary_Class, y = CS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = eCLIP_rep, aes(label = ifelse(Outlier_C_CS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Primary RBD', y = 'Cellular Specificity', title = 'Graph C: Primary RBD (CS)') +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+
+ggplot(eCLIP_rep, aes(x = Primary_Class, y = CVS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = eCLIP_rep, aes(label = ifelse(Outlier_C_CVS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Primary RBD', y = 'Cellular Variation Sensitivity', title = 'Graph C: Primary RBD (C-VS)') +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+
+## Graph D: Domain Architecture (3 bars)
+d_data = subset(eCLIP_rep, !is.na(Arch_Class))
+
+ggplot(d_data, aes(x = Arch_Class, y = CS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = d_data, aes(label = ifelse(Outlier_D_CS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Domain Architecture', y = 'Cellular Specificity', title = 'Graph D: Domain Architecture (CS)') +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+
+ggplot(d_data, aes(x = Arch_Class, y = CVS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = d_data, aes(label = ifelse(Outlier_D_CVS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Domain Architecture', y = 'Cellular Variation Sensitivity', title = 'Graph D: Domain Architecture (C-VS)') +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+
+## Graph E: Disordered Regions (2 bars)
+ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = eCLIP_rep, aes(label = ifelse(Outlier_E_CS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Disordered Regions', y = 'Cellular Specificity', title = 'Graph E: Disordered Regions (CS)') +
+  scale_y_continuous(trans = 'log2', limits = c(1, 64)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+
+ggplot(eCLIP_rep, aes(x = Disordered_Class, y = CVS)) +
+  geom_boxplot(notch = FALSE, outlier.shape = NA) +
+  geom_point(position = pos_jitter_new, size = 3, alpha = 0.7) +
+  geom_text_repel(data = eCLIP_rep, aes(label = ifelse(Outlier_E_CVS, RBP, NA_character_)), position = pos_jitter_new, size = 3, max.overlaps = 50,
+                  min.segment.length = 0, box.padding = 0.8, segment.color = 'grey50') +
+  labs(x = 'Disordered Regions', y = 'Cellular Variation Sensitivity', title = 'Graph E: Disordered Regions (C-VS)') +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0)) +
+  theme_bw() + theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = 'bold'))
+################################################################################
