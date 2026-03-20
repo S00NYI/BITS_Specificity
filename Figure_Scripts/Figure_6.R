@@ -59,6 +59,10 @@ both_cells = eCLIP_summary %>% filter(!is.na(IS_K562) & !is.na(IS_HepG2))
 both_cells = merge(both_cells, RBNS_metrics[, c('RBP', 'IS')], by = 'RBP', all.x = TRUE)
 colnames(both_cells)[colnames(both_cells) == 'IS'] = 'RBNS_IS'
 
+trend_model = lm(IS_K562 ~ IS_HepG2, data = both_cells)
+both_cells$Trend_Residual = rstandard(trend_model)
+both_cells$Trend_Outlier = abs(both_cells$Trend_Residual) > 2
+
 Corr_CS = cor(both_cells$IS_K562, both_cells$IS_HepG2, method = 'pearson')
 
 ggplot(both_cells, aes(x = IS_K562, y = IS_HepG2, fill = (RBNS_IS))) +
@@ -85,6 +89,10 @@ ggplot(both_cells, aes(x = IS_K562, y = IS_HepG2, fill = (RBNS_IS))) +
 # Merge RBNS VS for coloring:
 both_cells = merge(both_cells, RBNS_metrics[, c('RBP', 'VS')], by = 'RBP', all.x = TRUE)
 colnames(both_cells)[colnames(both_cells) == 'VS'] = 'RBNS_VS'
+
+trend_model = lm(VS_K562 ~ VS_HepG2, data = both_cells)
+both_cells$Trend_Residual = rstandard(trend_model)
+both_cells$Trend_Outlier = abs(both_cells$Trend_Residual) > 2
 
 Corr_CVS = cor(both_cells$VS_K562, both_cells$VS_HepG2, method = 'pearson')
 
