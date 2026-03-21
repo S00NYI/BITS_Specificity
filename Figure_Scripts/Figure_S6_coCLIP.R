@@ -604,7 +604,7 @@ for (CONDITION_DIR in all_condition_dirs) {
     Sample = character(),
     TopMotif = character(),
     IS = numeric(),
-    MS = numeric(),
+    VS = numeric(),
     stringsAsFactors = FALSE
   )
   
@@ -617,20 +617,20 @@ for (CONDITION_DIR in all_condition_dirs) {
     # Get Top Motif
     top_motif = enrich_data[which.max(Score), MOTIF]
     
-    # Get IS and MS
+    # Get IS and VS
     is_val = returnIS(enrich_data)
-    ms_val = returnMS(enrich_data, output_type = "number")
+    vs_val = returnVS(enrich_data, output_type = "number")
     
     summary_data = rbind(summary_data, data.frame(
       Sample = SAMPLE,
       TopMotif = top_motif,
       IS = is_val,
-      MS = ms_val
+      VS = vs_val
     ))
   }
   
-  fwrite(summary_data, paste0(CONDITION_DIR, "summary_IS_MS.txt"), sep = "\t")
-  message(paste0("Saved summary: ", CONDITION_DIR, "summary_IS_MS.txt"))
+  fwrite(summary_data, paste0(CONDITION_DIR, "summary_IS_VS.txt"), sep = "\t")
+  message(paste0("Saved summary: ", CONDITION_DIR, "summary_IS_VS.txt"))
 }
 ################################################################################
 
@@ -648,7 +648,7 @@ print(plotSeqLogo(Peak_Co_NLS_M, genome, narrow_window, "HuR NLS Mock", extensio
 print(plotSeqLogo(Peak_Co_NLS_S, genome, narrow_window, "HuR NLS Stress", extension = extension, method = logo_method, x_ticks = x_ticks))
 print(plotSeqLogo(Peak_Co_NES_M, genome, narrow_window, "HuR NES Mock", extension = extension, method = logo_method, x_ticks = x_ticks))
 print(plotSeqLogo(Peak_Co_NES_S, genome, narrow_window, "HuR NES Stress", extension = extension, method = logo_method, x_ticks = x_ticks))
-print(plotSeqLogo(Peak_Co_G3BP_M, genome, narrow_window, "HuR G3BP Stress", extension = extension, method = logo_method, x_ticks = x_ticks))
+print(plotSeqLogo(Peak_Co_G3BP_M, genome, narrow_window, "HuR G3BP Mock", extension = extension, method = logo_method, x_ticks = x_ticks))
 print(plotSeqLogo(Peak_Co_G3BP_S, genome, narrow_window, "HuR G3BP Stress", extension = extension, method = logo_method, x_ticks = x_ticks))
 ################################################################################
 

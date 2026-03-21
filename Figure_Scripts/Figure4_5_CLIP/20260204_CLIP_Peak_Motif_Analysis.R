@@ -270,7 +270,7 @@ for (CONDITION_DIR in all_condition_dirs) {
 ################################################################################
 
 
-## 5. IS/MS Summary Tables:
+## 5. IS/VS Summary Tables:
 ################################################################################
 for (CONDITION_DIR in all_condition_dirs) {
     if (!dir.exists(CONDITION_DIR)) next
@@ -279,7 +279,7 @@ for (CONDITION_DIR in all_condition_dirs) {
         Sample = character(),
         TopMotif = character(),
         IS = numeric(),
-        MS = numeric(),
+        VS = numeric(),
         stringsAsFactors = FALSE
     )
 
@@ -292,20 +292,20 @@ for (CONDITION_DIR in all_condition_dirs) {
         # Get Top Motif
         top_motif = enrich_data[which.max(Score), MOTIF]
 
-        # Get IS and MS
+        # Get IS and VS
         is_val = returnIS(enrich_data)
-        ms_val = returnMS(enrich_data, output_type = "number")
+        vs_val = returnVS(enrich_data, output_type = "number")
 
         summary_data = rbind(summary_data, data.frame(
             Sample = SAMPLE,
             TopMotif = top_motif,
             IS = is_val,
-            MS = ms_val
+            VS = vs_val
         ))
     }
 
-    fwrite(summary_data, paste0(CONDITION_DIR, "summary_IS_MS.txt"), sep = "\t")
-    message(paste0("Saved summary: ", CONDITION_DIR, "summary_IS_MS.txt"))
+    fwrite(summary_data, paste0(CONDITION_DIR, "summary_IS_VS.txt"), sep = "\t")
+    message(paste0("Saved summary: ", CONDITION_DIR, "summary_IS_VS.txt"))
 }
 ################################################################################
 
@@ -374,15 +374,15 @@ print(affinityDistribution_RBM25)
 print(affinityDistribution_hnRNPC_inRBM25)
 print(affinityDistribution_hnRNPC_inKD)
 
-# 6B. Mutational Sensitivity Plots
-plotMS(motifEnrichment_hnRNPC_WT)
-plotMS(motifEnrichment_hnRNPC_Mut)
-plotMS(motifEnrichment_hnRNPC_WT_inRBM25_WT)
-plotMS(motifEnrichment_hnRNPC_WT_inRBM25_Mut)
-plotMS(motifEnrichment_hnRNPC_WT_inKD)
-plotMS(motifEnrichment_hnRNPC_Mut_inKD)
-plotMS(motifEnrichment_RBM25_WT)
-plotMS(motifEnrichment_RBM25_Mut)
+# 6B. Variation Sensitivity Plots
+plotVS(motifEnrichment_hnRNPC_WT)
+plotVS(motifEnrichment_hnRNPC_Mut)
+plotVS(motifEnrichment_hnRNPC_WT_inRBM25_WT)
+plotVS(motifEnrichment_hnRNPC_WT_inRBM25_Mut)
+plotVS(motifEnrichment_hnRNPC_WT_inKD)
+plotVS(motifEnrichment_hnRNPC_Mut_inKD)
+plotVS(motifEnrichment_RBM25_WT)
+plotVS(motifEnrichment_RBM25_Mut)
 
 
 returnIS(motifEnrichment_hnRNPC_WT)

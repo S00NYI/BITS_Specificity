@@ -161,9 +161,9 @@ for (K in Ks) {
   }
 }
 
-MutationalSensitivity = as.data.frame(matrix(NA, nrow = 26, ncol = 5))
-colnames(MutationalSensitivity) = c('RBP', '4mer', '5mer', '6mer', '7mer')
-MutationalSensitivity$RBP = RBPs_5mer
+VariationSensitivity = as.data.frame(matrix(NA, nrow = 26, ncol = 5))
+colnames(VariationSensitivity) = c('RBP', '4mer', '5mer', '6mer', '7mer')
+VariationSensitivity$RBP = RBPs_5mer
 
 Ks = c(4, 5, 6, 7)
 
@@ -174,7 +174,7 @@ for (K in Ks) {
     temp = data.frame(MOTIF = unlist(RBNS_Data[, 'Motif']),
                       Score = unlist(RBNS_Data[, RBP]))
     rownames(temp) = NULL
-    MutationalSensitivity[which(MutationalSensitivity$RBP == RBP), paste0(K, 'mer')] = returnMS(temp, output_type = 'number')
+    VariationSensitivity[which(VariationSensitivity$RBP == RBP), paste0(K, 'mer')] = returnVS(temp, output_type = 'number')
   }
 }
 ################################################################################
@@ -215,9 +215,9 @@ pheatmap(ordered_heatmap_data,
 
 ################################################################################
 
-## Plot Mutational Sensitivity rank across different K-mers:
+## Plot Variation Sensitivity rank across different K-mers:
 ################################################################################
-long_data_rank = MutationalSensitivity %>%
+long_data_rank = VariationSensitivity %>%
   gather(key = "mer", value = "value", -RBP) %>%
   group_by(mer) %>%
   mutate(rank = rank(-value)) %>%
@@ -235,12 +235,12 @@ heatmap_data = ranked_df %>% column_to_rownames(var = 'RBP')
 avg_ranks = rowMeans(heatmap_data, na.rm = TRUE)
 ordered_heatmap_data = heatmap_data[order(avg_ranks), ]
 
-MS_data_for_heatmap = MutationalSensitivity %>% column_to_rownames(var = 'RBP') %>% as.matrix()
-MS_data_for_heatmap = round(MS_data_for_heatmap, 2)
-MS_data_for_heatmap = MS_data_for_heatmap[rownames(ordered_heatmap_data), ]
+VS_data_for_heatmap = VariationSensitivity %>% column_to_rownames(var = 'RBP') %>% as.matrix()
+VS_data_for_heatmap = round(VS_data_for_heatmap, 2)
+VS_data_for_heatmap = VS_data_for_heatmap[rownames(ordered_heatmap_data), ]
 
 pheatmap(ordered_heatmap_data,
-         display_numbers = MS_data_for_heatmap,
+         display_numbers = VS_data_for_heatmap,
          cluster_rows = FALSE,
          cluster_cols = FALSE,
          show_rownames = TRUE,
@@ -251,17 +251,17 @@ pheatmap(ordered_heatmap_data,
 
 ################################################################################
 
-## Plot IS vs MS Between K-mers:
+## Plot IS vs VS Between K-mers:
 ################################################################################
-IS_MS_4 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'4mer', MS = MutationalSensitivity$'4mer')
-IS_MS_6 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'6mer', MS = MutationalSensitivity$'6mer')
-IS_MS_7 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'7mer', MS = MutationalSensitivity$'7mer')
+IS_VS_4 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'4mer', VS = VariationSensitivity$'4mer')
+IS_VS_6 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'6mer', VS = VariationSensitivity$'6mer')
+IS_VS_7 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'7mer', VS = VariationSensitivity$'7mer')
 
-r = cor(IS_MS_4$IS, IS_MS_4$MS, use = 'complete.obs')
-ggplot(IS_MS_4, aes(x = IS, y = MS, label = RBP)) +
+r = cor(IS_VS_4$IS, IS_VS_4$VS, use = 'complete.obs')
+ggplot(IS_VS_4, aes(x = IS, y = VS, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "4mer Specificity Index", y = "4mer Mutational Sensitivity", title = "4-mer: SI vs MS") +
+  labs(x = "4mer Specificity Index", y = "4mer Variation Sensitivity", title = "4-mer: SI vs VS") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 40), breaks = seq(0, 100, by = 5)) +
@@ -271,11 +271,11 @@ ggplot(IS_MS_4, aes(x = IS, y = MS, label = RBP)) +
         legend.text = element_text(size=14))
 
 
-r = cor(IS_MS_6$IS, IS_MS_6$MS, use = 'complete.obs')
-ggplot(IS_MS_6, aes(x = IS, y = MS, label = RBP)) +
+r = cor(IS_VS_6$IS, IS_VS_6$VS, use = 'complete.obs')
+ggplot(IS_VS_6, aes(x = IS, y = VS, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "6mer Specificity Index", y = "6mer Mutational Sensitivity", title = "6-mer: SI vs MS") +
+  labs(x = "6mer Specificity Index", y = "6mer Variation Sensitivity", title = "6-mer: SI vs VS") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 160), breaks = seq(0, 160, by = 20)) +
@@ -284,11 +284,11 @@ ggplot(IS_MS_6, aes(x = IS, y = MS, label = RBP)) +
         axis.title = element_text(size=14, face = 'bold'), 
         legend.text = element_text(size=14)) 
 
-r = cor(IS_MS_7$IS, IS_MS_7$MS, use = 'complete.obs')
-ggplot(IS_MS_7, aes(x = IS, y = MS, label = RBP)) +
+r = cor(IS_VS_7$IS, IS_VS_7$VS, use = 'complete.obs')
+ggplot(IS_VS_7, aes(x = IS, y = VS, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "7mer Specificity Index", y = "7mer Mutational Sensitivity", title = "7-mer: SI vs MS") +
+  labs(x = "7mer Specificity Index", y = "7mer Variation Sensitivity", title = "7-mer: SI vs VS") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 320), breaks = seq(0, 320, by = 40)) +
@@ -409,9 +409,9 @@ ggplot(InherentSpecificity, aes(x = `6mer`, y = `7mer`, label = RBP)) +
         legend.text = element_text(size=14))
 ################################################################################
 
-## NOT INCLUDED: Plot Mutational Sensitivity across different K-mers:
+## NOT INCLUDED: Plot Variation Sensitivity across different K-mers:
 ################################################################################
-long_data = MutationalSensitivity %>%
+long_data = VariationSensitivity %>%
   pivot_longer(cols = c('4mer', '5mer', '6mer', '7mer'),
                names_to = 'mer',
                values_to = 'value')
@@ -420,7 +420,7 @@ ggplot(long_data, aes(x = mer, y = value, group = RBP, color = RBP)) +
   geom_line() +
   geom_point() +
   theme_minimal() +
-  labs(x = "K-Mer", y = "Mutational Sensitivity", title = "MS per RBP across Different K-mers") +
+  labs(x = "K-Mer", y = "Variation Sensitivity", title = "VS per RBP across Different K-mers") +
   scale_y_continuous(limits = c(0, 1),
                      breaks = seq(0, 1, by = 0.1))  +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -431,14 +431,14 @@ ggplot(long_data, aes(x = mer, y = value, group = RBP, color = RBP)) +
         legend.text = element_text(size=14))
 ################################################################################
 
-## NOT INCLUDED: Mutational Sensitivity Comparison Between Kmers:
+## NOT INCLUDED: Variation Sensitivity Comparison Between Kmers:
 ################################################################################
 # 4 v 5
-r = cor(MutationalSensitivity$'4mer', MutationalSensitivity$'5mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `4mer`, y = `5mer`, label = RBP)) +
+r = cor(VariationSensitivity$'4mer', VariationSensitivity$'5mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `4mer`, y = `5mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "4mer Mutational Sensitivity", y = "5mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "4mer Variation Sensitivity", y = "5mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
@@ -448,11 +448,11 @@ ggplot(MutationalSensitivity, aes(x = `4mer`, y = `5mer`, label = RBP)) +
         legend.text = element_text(size=14))
 
 # 4 v 6
-r = cor(MutationalSensitivity$'4mer', MutationalSensitivity$'6mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `4mer`, y = `6mer`, label = RBP)) +
+r = cor(VariationSensitivity$'4mer', VariationSensitivity$'6mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `4mer`, y = `6mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "4mer Mutational Sensitivity", y = "6mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "4mer Variation Sensitivity", y = "6mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
@@ -462,11 +462,11 @@ ggplot(MutationalSensitivity, aes(x = `4mer`, y = `6mer`, label = RBP)) +
         legend.text = element_text(size=14)) 
 
 # 4 v 7
-r = cor(MutationalSensitivity$'4mer', MutationalSensitivity$'7mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `4mer`, y = `7mer`, label = RBP)) +
+r = cor(VariationSensitivity$'4mer', VariationSensitivity$'7mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `4mer`, y = `7mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "4mer Mutational Sensitivity", y = "7mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "4mer Variation Sensitivity", y = "7mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
@@ -476,11 +476,11 @@ ggplot(MutationalSensitivity, aes(x = `4mer`, y = `7mer`, label = RBP)) +
         legend.text = element_text(size=14))
 
 # 5 v 6
-r = cor(MutationalSensitivity$'5mer', MutationalSensitivity$'6mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `5mer`, y = `6mer`, label = RBP)) +
+r = cor(VariationSensitivity$'5mer', VariationSensitivity$'6mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `5mer`, y = `6mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "5mer Mutational Sensitivity", y = "6mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "5mer Variation Sensitivity", y = "6mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
@@ -490,11 +490,11 @@ ggplot(MutationalSensitivity, aes(x = `5mer`, y = `6mer`, label = RBP)) +
         legend.text = element_text(size=14))
 
 # 5 v 7
-r = cor(MutationalSensitivity$'5mer', MutationalSensitivity$'7mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `5mer`, y = `7mer`, label = RBP)) +
+r = cor(VariationSensitivity$'5mer', VariationSensitivity$'7mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `5mer`, y = `7mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "5mer Mutational Sensitivity", y = "7mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "5mer Variation Sensitivity", y = "7mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
@@ -504,11 +504,11 @@ ggplot(MutationalSensitivity, aes(x = `5mer`, y = `7mer`, label = RBP)) +
         legend.text = element_text(size=14))
 
 # 6 v 7
-r = cor(MutationalSensitivity$'6mer', MutationalSensitivity$'7mer', use = 'complete.obs')
-ggplot(MutationalSensitivity, aes(x = `6mer`, y = `7mer`, label = RBP)) +
+r = cor(VariationSensitivity$'6mer', VariationSensitivity$'7mer', use = 'complete.obs')
+ggplot(VariationSensitivity, aes(x = `6mer`, y = `7mer`, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "6mer Mutational Sensitivity", y = "7mer Mutational Sensitivity", title = "MS Comparison between K-mers") +
+  labs(x = "6mer Variation Sensitivity", y = "7mer Variation Sensitivity", title = "VS Comparison between K-mers") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +

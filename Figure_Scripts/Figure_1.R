@@ -149,8 +149,8 @@ ggplot() +
         axis.title = element_text(size=14, face = 'bold'),
         legend.text = element_text(size=14))
 
-plotMS(RBM25)
-returnMS(RBM25, output_type = 'number')      # 0.22
+plotVS(RBM25)
+returnVS(RBM25, output_type = 'number')      # 0.22
 returnIS(RBM25)                              # 2.45
 ################################################################################
 
@@ -172,8 +172,8 @@ ggplot() +
         axis.title = element_text(size=14, face = 'bold'),
         legend.text = element_text(size=14))
 
-plotMS(hnRNPC)
-returnMS(hnRNPC, output_type = 'number')     # 0.86
+plotVS(hnRNPC)
+returnVS(hnRNPC, output_type = 'number')     # 0.86
 returnIS(hnRNPC)                             # 50.8
 ################################################################################
 
@@ -209,10 +209,10 @@ for (K in Ks) {
   }
 }
 
-# Calculate Mutational Sensitivity for RBPs:
-MutationalSensitivity = as.data.frame(matrix(NA, nrow = 26, ncol = 5))
-colnames(MutationalSensitivity) = c('RBP', '4mer', '5mer', '6mer', '7mer')
-MutationalSensitivity$RBP = RBPs_5mer
+# Calculate Variation Sensitivity for RBPs:
+VariationSensitivity = as.data.frame(matrix(NA, nrow = 26, ncol = 5))
+colnames(VariationSensitivity) = c('RBP', '4mer', '5mer', '6mer', '7mer')
+VariationSensitivity$RBP = RBPs_5mer
 
 Ks = c(4, 5, 6, 7)
 
@@ -223,21 +223,21 @@ for (K in Ks) {
     temp = data.frame(MOTIF = unlist(RBNS_Data[, 'Motif']),
                       Score = unlist(RBNS_Data[, RBP]))
     rownames(temp) = NULL
-    MutationalSensitivity[which(MutationalSensitivity$RBP == RBP), paste0(K, 'mer')] = returnMS(temp, output_type = 'number')
+    VariationSensitivity[which(VariationSensitivity$RBP == RBP), paste0(K, 'mer')] = returnVS(temp, output_type = 'number')
   }
 }
 
 ################################################################################
 
-## Panel D: IS vs MS Between Kmers:
+## Panel D: IS vs VS Between Kmers:
 ################################################################################
-IS_MS_5 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'5mer', MS = MutationalSensitivity$'5mer')
+IS_VS_5 = data.frame(RBP = InherentSpecificity$RBP, IS = InherentSpecificity$'5mer', VS = VariationSensitivity$'5mer')
 
-r = cor(IS_MS_5$IS, IS_MS_5$MS, use = 'complete.obs')
-ggplot(IS_MS_5, aes(x = IS, y = MS, label = RBP)) +
+r = cor(IS_VS_5$IS, IS_VS_5$VS, use = 'complete.obs')
+ggplot(IS_VS_5, aes(x = IS, y = VS, label = RBP)) +
   geom_point() +
   geom_text_repel() +
-  labs(x = "5mer Specificity Index", y = "5mer Mutational Sensitivity", title = "5-mer: SI vs MS") +
+  labs(x = "5mer Specificity Index", y = "5mer Variation Sensitivity", title = "5-mer: SI vs VS") +
   annotate("text", x = Inf, y = Inf, label = paste0("R == ", format(r, digits = 2)), parse = TRUE, hjust = 1.1, vjust = 2, size = 5, color = "red") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
   scale_x_continuous(limits = c(0, 80), breaks = seq(0, 100, by = 10)) +
@@ -251,8 +251,8 @@ ggplot(IS_MS_5, aes(x = IS, y = MS, label = RBP)) +
 ################################################################################
 IS_Data = InherentSpecificity[, c('4mer', '5mer', '6mer', '7mer')]
 colnames(IS_Data) = c('IS_4', 'IS_5', 'IS_6', 'IS_7')
-MS_Data = MutationalSensitivity[, c('4mer', '5mer', '6mer', '7mer')]
-colnames(MS_Data) = c('MS_4', 'MS_5', 'MS_6', 'MS_7')
+VS_Data = VariationSensitivity[, c('4mer', '5mer', '6mer', '7mer')]
+colnames(VS_Data) = c('VS_4', 'VS_5', 'VS_6', 'VS_7')
 
 # Generate SI heatmap
 KMer_Data = IS_Data
@@ -266,8 +266,8 @@ color_palette = (colorRampPalette(brewer.pal(9, "GnBu"))(100))
 breaks = seq(0.5, 1, length.out = length(color_palette) + 1)
 pheatmap(CorrMatrix, cluster_rows = F, cluster_cols = F, display_numbers = T, color = color_palette, breaks = breaks)
 
-# Generate MS heatmap
-KMer_Data = MS_Data
+# Generate VS heatmap
+KMer_Data = VS_Data
 CorrMatrix = cor(KMer_Data,  use = "pairwise.complete.obs")
 CorrMatrix = matrix(round(CorrMatrix,2), nrow = ncol(KMer_Data))
 rownames(CorrMatrix) = colnames(KMer_Data)

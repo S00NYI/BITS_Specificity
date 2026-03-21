@@ -66,14 +66,14 @@ for (cell_line in cell_lines) {
                                    log_transform = TRUE,
                                    scramble_bkg = FALSE)
       IS = returnIS(enrichment, return_type = 'all')
-      MS = returnMS(enrichment, return_type = 'all')
+      VS = returnVS(enrichment, return_type = 'all')
 
       write.csv(enrichment,
                 paste0(outputDir, DATE, '/', cell_line, '_eCLIP_NormalizedEnrichment_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), quote = F)
       write.csv(IS,
                 paste0(outputDir, DATE, '/', cell_line, '_eCLIP_ISperMotif_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), quote = F)
-      write.csv(MS,
-                paste0(outputDir, DATE, '/', cell_line, '_eCLIP_MSperMotif_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), quote = F)
+      write.csv(VS,
+                paste0(outputDir, DATE, '/', cell_line, '_eCLIP_VSperMotif_', extension, 'ntExt_', RBP, '_', as.character(K), 'mer.csv'), quote = F)
     }
   }
 }
@@ -374,19 +374,19 @@ for (RBP in RBPs$RBP) {
 
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Motif'] = RBNS_Motif
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Specificity'] = returnIS(RBNS, RBNS_Motif)
-  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Sensitivity'] = returnMS(RBNS, RBNS_Motif, output_type = 'number')
+  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Sensitivity'] = returnVS(RBNS, RBNS_Motif, output_type = 'number')
 
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Motif'] = eCLIP_Motif
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Specificity'] = returnIS(eCLIP, eCLIP_Motif)
-  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Sensitivity'] = returnMS(eCLIP, eCLIP_Motif, output_type = 'number')
+  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Sensitivity'] = returnVS(eCLIP, eCLIP_Motif, output_type = 'number')
 
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Motif_eCLIP_Score'] = eCLIP$Score[which(eCLIP$MOTIF == RBNS_Motif)]
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Motif_RBNS_Score'] = RBNS$Score[which(RBNS$MOTIF == eCLIP_Motif)]
 
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Motif_eCLIP_Specificity'] = returnIS(eCLIP, RBNS_Motif)
-  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Motif_eCLIP_Sensitivity'] = returnMS(eCLIP, RBNS_Motif, output_type = 'number')
+  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_Motif_eCLIP_Sensitivity'] = returnVS(eCLIP, RBNS_Motif, output_type = 'number')
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Motif_RBNS_Specificity'] = returnIS(RBNS, eCLIP_Motif)
-  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Motif_RBNS_Sensitivity'] = returnMS(RBNS, eCLIP_Motif, output_type = 'number')
+  eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'eCLIP_Motif_RBNS_Sensitivity'] = returnVS(RBNS, eCLIP_Motif, output_type = 'number')
 
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_v_eCLIP_Pearson'] = cor(RBNS$Score, eCLIP$Score, method = c('pearson'))
   eCLIP_Analysis[which(eCLIP_Analysis$RBP == RBP), 'RBNS_v_eCLIP_Spearman'] = cor(RBNS$Score, eCLIP$Score, method = c('spearman'))
@@ -670,8 +670,8 @@ ggplot() +
   geom_point(data = temp_plotData %>% filter(Structure == 'N'), aes(x = IT, y = AT), fill = 'darkseagreen4', alpha = 1, shape = 21, size = 4) +
   geom_smooth(data = temp_plotData %>% filter(Structure == 'N'), aes(x = IT, y = AT), method = "lm", linetype = 'solid', color = 'darkseagreen4', se = F, linewidth = 0.5, alpha = 0.1) +
   theme_minimal() +
-  labs(x = 'Inherent Mutational Sensitivity',
-       y = 'Apparent Mutational Sensitivity',
+  labs(x = 'Inherent Variation Sensitivity',
+       y = 'Apparent Variation Sensitivity',
        title = paste0('Apparent vs Inherent Sensitivity')) +
   scale_x_continuous(limits = c(0, 1)) +
   scale_y_continuous(limits = c(0, 1)) +
