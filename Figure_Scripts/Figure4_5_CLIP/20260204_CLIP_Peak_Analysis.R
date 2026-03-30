@@ -16,11 +16,11 @@ library(ggsignif)
 
 ## 1. Basic Setup:
 ################################################################################
-# BASE_DIR = "F:/Specificity/CLIP/Analysis/"
+BASE_DIR = "F:/Specificity/CLIP/Analysis/"
 # INPUT_DIR = paste0(BASE_DIR, "output/")
 # OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
-BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
+# BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
 INPUT_DIR = paste0(BASE_DIR, "output/")
 OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
@@ -307,13 +307,28 @@ peaks_hnRNPC_WT_overlap = peaks_hnRNPC_WT %>% filter(name %in% peaks_overlap) %>
 peaks_hnRNPC_WT_inRBM25_WT_overlap = peaks_hnRNPC_WT_inRBM25_WT %>% filter(name %in% peaks_overlap) %>% arrange(name)
 peaks_hnRNPC_WT_inRBM25_Mut_overlap = peaks_hnRNPC_WT_inRBM25_Mut %>% filter(name %in% peaks_overlap) %>% arrange(name)
 
+peaks_overlap_df = data.frame(
+  peak = peaks_hnRNPC_WT_overlap$name,
+  inRBM25WT = peaks_hnRNPC_WT_inRBM25_WT_overlap$nTC_hnRNPC_WT_inRBM25_WT / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT,
+  inRBM25Mut = peaks_hnRNPC_WT_inRBM25_Mut_overlap$nTC_hnRNPC_WT_inRBM25_Mut / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT
+)
+
+peaks_overlap_df %>% filter(log2(inRBM25WT) > log2(2) & log2(inRBM25Mut) < -log2(2) )
+peaks_overlap_df %>% filter(log2(inRBM25Mut) > log2(2) & log2(inRBM25WT) < -log2(2) )
+
+
 L2FC_hnRNPC_inRBM25 = data.frame(WT = log2(peaks_hnRNPC_WT_inRBM25_WT_overlap$nTC_hnRNPC_WT_inRBM25_WT / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT),
                                  Mut = log2(peaks_hnRNPC_WT_inRBM25_Mut_overlap$nTC_hnRNPC_WT_inRBM25_Mut / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT))
 
 ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut)) +
-  geom_hline(yintercept = 0, color = "red", linetype = 'dotted') +
-  geom_vline(xintercept = 0, color = "red", linetype = 'dotted') +
-  geom_point(pch = 16, size = 3, alpha = 0.1) +
+  # geom_hline(yintercept = 0, color = "red", linetype = 'dotted') +
+  geom_hline(yintercept = 1, color = "red", linetype = 'dotted') +
+  geom_hline(yintercept = -1, color = "red", linetype = 'dotted') +
+  # geom_vline(xintercept = 0, color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = 1, color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = -1, color = "red", linetype = 'dotted') +
+  geom_point(pch = 16, size = 3, alpha = 0.5) +
+  labs(x = "Log2(HNRNPC WT in RBM25 WT OE / HNRNPC WT)", y = "Log2(HNRNPC WT in RBM25 MUT OE / HNRNPC WT)") +
   scale_fill_brewer(palette = "Set3") +
   scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
   scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
@@ -321,24 +336,6 @@ ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut)) +
   theme(axis.text = element_text(size=14), 
         axis.title = element_text(size=14, face = 'bold'), 
         legend.text = element_text(size=14))
-
-L2FC_hnRNPC_inRBM25_long = L2FC_hnRNPC_inRBM25 %>%
-  pivot_longer(cols = c(WT, Mut), names_to = "Condition", values_to = "nTC")
-
-ggplot(L2FC_hnRNPC_inRBM25_long, aes(x = Condition, y = nTC, fill = Condition)) +
-  geom_boxplot(outlier.shape = NA, notch = T) + 
-  # geom_jitter(width = 0.2, alpha = 0.1)+
-  scale_fill_brewer(palette = "Set3") +
-  scale_y_continuous(limits = c(-2.5, 2.5), breaks = seq(-2.5, 2.5, by = 0.5)) +
-  theme_bw() + 
-  theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face = 'bold'), 
-        legend.text = element_text(size=14)) + 
-  geom_signif(comparisons = list(c("WT", "Mut")),
-              test = c('t.test'),
-              map_signif_level = TRUE,
-              textsize = 5, y_position = 2, tip_length = 0.05)
-
 
 
 ################################################################################
