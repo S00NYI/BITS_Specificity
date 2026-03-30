@@ -301,41 +301,55 @@ plotOverlapVenn(
 ## 6. Peak Overlap TC comparison for hnRNPC in RBM25 WT/Mut OE:
 ################################################################################
 
-peaks_overlap = intersect(peaks_hnRNPC_WT$name, intersect(peaks_hnRNPC_WT_inRBM25_WT$name, peaks_hnRNPC_WT_inRBM25_Mut$name))
-
-peaks_hnRNPC_WT_overlap = peaks_hnRNPC_WT %>% filter(name %in% peaks_overlap) %>% arrange(name)
-peaks_hnRNPC_WT_inRBM25_WT_overlap = peaks_hnRNPC_WT_inRBM25_WT %>% filter(name %in% peaks_overlap) %>% arrange(name)
-peaks_hnRNPC_WT_inRBM25_Mut_overlap = peaks_hnRNPC_WT_inRBM25_Mut %>% filter(name %in% peaks_overlap) %>% arrange(name)
-
-peaks_overlap_df = data.frame(
-  peak = peaks_hnRNPC_WT_overlap$name,
-  inRBM25WT = peaks_hnRNPC_WT_inRBM25_WT_overlap$nTC_hnRNPC_WT_inRBM25_WT / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT,
-  inRBM25Mut = peaks_hnRNPC_WT_inRBM25_Mut_overlap$nTC_hnRNPC_WT_inRBM25_Mut / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT
+# 1. Define custom color palette
+peak_colors <- c(
+  "5'UTR"       = "#332f85",
+  "CDS"         = "#89ccee",
+  "3'UTR"       = "#44aa99",
+  "intron"      = "#cc6677",
+  "ncRNA"       = "#ddcc76",
+  "unannotated" = "#dddddd"
 )
 
-peaks_overlap_df %>% filter(log2(inRBM25WT) > log2(2) & log2(inRBM25Mut) < -log2(2) )
-peaks_overlap_df %>% filter(log2(inRBM25Mut) > log2(2) & log2(inRBM25WT) < -log2(2) )
+# 2. Ensure Annotation is a factor with the desired order for the grid
+L2FC_hnRNPC_inRBM25$Annotation <- factor(
+  L2FC_hnRNPC_inRBM25$Annotation, 
+  levels = c("5'UTR", "CDS", "3'UTR", "intron", "ncRNA", "unannotated")
+)
 
-
-L2FC_hnRNPC_inRBM25 = data.frame(WT = log2(peaks_hnRNPC_WT_inRBM25_WT_overlap$nTC_hnRNPC_WT_inRBM25_WT / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT),
-                                 Mut = log2(peaks_hnRNPC_WT_inRBM25_Mut_overlap$nTC_hnRNPC_WT_inRBM25_Mut / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT))
-
-ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut)) +
-  # geom_hline(yintercept = 0, color = "red", linetype = 'dotted') +
-  geom_hline(yintercept = 1, color = "red", linetype = 'dotted') +
-  geom_hline(yintercept = -1, color = "red", linetype = 'dotted') +
-  # geom_vline(xintercept = 0, color = "red", linetype = 'dotted') +
-  geom_vline(xintercept = 1, color = "red", linetype = 'dotted') +
-  geom_vline(xintercept = -1, color = "red", linetype = 'dotted') +
-  geom_point(pch = 16, size = 3, alpha = 0.5) +
-  labs(x = "Log2(HNRNPC WT in RBM25 WT OE / HNRNPC WT)", y = "Log2(HNRNPC WT in RBM25 MUT OE / HNRNPC WT)") +
-  scale_fill_brewer(palette = "Set3") +
+# 3. Figure 1: Overlaid Scatterplot
+ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
+  geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_point(pch = 16, size = 3, alpha = 0.6) +
+  scale_color_manual(values = peak_colors) +
   scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
   scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
+  labs(title = "Overlaid Regions",
+       x = "Log2(HNRNPC WT in RBM25 WT OE / HNRNPC WT)", 
+       y = "Log2(HNRNPC WT in RBM25 MUT OE / HNRNPC WT)") +
   theme_bw() + 
-  theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face = 'bold'), 
-        legend.text = element_text(size=14))
+  theme(axis.text = element_text(size=12), 
+        axis.title = element_text(size=14, face = 'bold'))
+
+# 4. Figure 2: 2x3 Faceted Panels
+ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
+  geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_point(pch = 16, size = 2, alpha = 0.6) +
+  # Facet into 2 rows and 3 columns
+  facet_wrap(~Annotation, nrow = 2, ncol = 3) +
+  scale_color_manual(values = peak_colors) +
+  scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
+  scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
+  labs(x = "Log2(HNRNPC WT in RBM25 WT OE / HNRNPC WT)", 
+       y = "Log2(HNRNPC WT in RBM25 MUT OE / HNRNPC WT)") +
+  theme_bw() + 
+  theme(axis.text = element_text(size=10), 
+        axis.title = element_text(size=14, face = 'bold'),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 12, face = "bold"),
+        legend.position = "none") # Legend is redundant with facet titles
 
 
 ################################################################################
