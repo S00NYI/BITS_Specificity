@@ -13,6 +13,7 @@ library(readr)
 library(stringr)
 library(ggplot2)
 library(ggsignif)
+library(eulerr)
 
 ## 1. Basic Setup:
 ################################################################################
@@ -57,14 +58,24 @@ peaks_RBM25_WT = peaks_RBM25_WT %>% filter(nTC_RBM25_WT >= quantile(peaks_RBM25_
 peaks_RBM25_Mut = peaksMatrix %>% filter(BC_RBM25_Mut >= 3)
 peaks_RBM25_Mut = peaks_RBM25_Mut %>% filter(nTC_RBM25_Mut >= quantile(peaks_RBM25_Mut$nTC_RBM25_Mut)[3])
 
-fwrite(peaks_hnRNPC_WT, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT", ".txt"), sep = "\t")
-fwrite(peaks_hnRNPC_Mut, paste0(OUTPUT_DIR, "peaks_hnRNPC_Mut", ".txt"), sep = "\t")
-fwrite(peaks_hnRNPC_WT_inRBM25_WT, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inRBM25_WT", ".txt"), sep = "\t")
-fwrite(peaks_hnRNPC_WT_inRBM25_Mut, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inRBM25_Mut", ".txt"), sep = "\t")
-fwrite(peaks_hnRNPC_WT_inKD, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inKD", ".txt"), sep = "\t")
-fwrite(peaks_hnRNPC_Mut_inKD, paste0(OUTPUT_DIR, "peaks_hnRNPC_Mut_inKD", ".txt"), sep = "\t")
-fwrite(peaks_RBM25_WT, paste0(OUTPUT_DIR, "peaks_RBM25_WT", ".txt"), sep = "\t")
-fwrite(peaks_RBM25_Mut, paste0(OUTPUT_DIR, "peaks_RBM25_Mut", ".txt"), sep = "\t")
+
+peaks_hnRNPC_WT = peaks_hnRNPC_WT %>% distinct()
+peaks_hnRNPC_Mut = peaks_hnRNPC_Mut %>% distinct()
+peaks_hnRNPC_WT_inRBM25_WT = peaks_hnRNPC_WT_inRBM25_WT %>% distinct()
+peaks_hnRNPC_WT_inRBM25_Mut = peaks_hnRNPC_WT_inRBM25_Mut %>% distinct()
+peaks_hnRNPC_WT_inKD = peaks_hnRNPC_WT_inKD %>% distinct()
+peaks_hnRNPC_Mut_inKD = peaks_hnRNPC_Mut_inKD %>% distinct()
+peaks_RBM25_WT = peaks_RBM25_WT %>% distinct()
+peaks_RBM25_Mut = peaks_RBM25_Mut %>% distinct()
+
+# fwrite(peaks_hnRNPC_WT, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT", ".txt"), sep = "\t")
+# fwrite(peaks_hnRNPC_Mut, paste0(OUTPUT_DIR, "peaks_hnRNPC_Mut", ".txt"), sep = "\t")
+# fwrite(peaks_hnRNPC_WT_inRBM25_WT, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inRBM25_WT", ".txt"), sep = "\t")
+# fwrite(peaks_hnRNPC_WT_inRBM25_Mut, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inRBM25_Mut", ".txt"), sep = "\t")
+# fwrite(peaks_hnRNPC_WT_inKD, paste0(OUTPUT_DIR, "peaks_hnRNPC_WT_inKD", ".txt"), sep = "\t")
+# fwrite(peaks_hnRNPC_Mut_inKD, paste0(OUTPUT_DIR, "peaks_hnRNPC_Mut_inKD", ".txt"), sep = "\t")
+# fwrite(peaks_RBM25_WT, paste0(OUTPUT_DIR, "peaks_RBM25_WT", ".txt"), sep = "\t")
+# fwrite(peaks_RBM25_Mut, paste0(OUTPUT_DIR, "peaks_RBM25_Mut", ".txt"), sep = "\t")
 
 ################################################################################
 
@@ -298,11 +309,8 @@ plotOverlapVenn(
 
 ################################################################################
 
-## 6. Peak Overlap TC comparison for hnRNPC in RBM25 WT/Mut OE:
 ################################################################################
-
-# 1. Define custom color palette
-peak_colors <- c(
+peak_colors = c(
   "5'UTR"       = "#332f85",
   "CDS"         = "#89ccee",
   "3'UTR"       = "#44aa99",
@@ -311,14 +319,82 @@ peak_colors <- c(
   "unannotated" = "#dddddd"
 )
 
-# 2. Ensure Annotation is a factor with the desired order for the grid
-L2FC_hnRNPC_inRBM25$Annotation <- factor(
-  L2FC_hnRNPC_inRBM25$Annotation, 
+
+# Join all dataframes
+peaks_union_df = peaks_hnRNPC_WT %>%
+  select(name, external_gene_name, grouped_annotation, nTC_hnRNPC_WT) %>%
+  full_join(
+    peaks_hnRNPC_WT_inRBM25_WT %>% select(name, nTC_hnRNPC_WT_inRBM25_WT),
+    by = "name"
+  ) %>%
+  full_join(
+    peaks_hnRNPC_WT_inRBM25_Mut %>% select(name, nTC_hnRNPC_WT_inRBM25_Mut),
+    by = "name"
+  )
+
+peaks_union_df = peaks_union_df %>% filter(external_gene_name != "")
+
+# Targeted NA replacement for numeric columns only
+peaks_union_df = peaks_union_df %>%
+  mutate(across(starts_with("nTC"), ~replace_na(., 0)))
+
+
+
+#     Null    RBM25_WT_OE   RBM25_MUT_OE
+# A    +           +             +
+# B    +           +             -
+# C    +           -             +
+# D    +           -             -
+
+peaks_A = peaks_union_df %>% filter(nTC_hnRNPC_WT > 0 & 
+                                    nTC_hnRNPC_WT_inRBM25_WT > 0 & 
+                                    nTC_hnRNPC_WT_inRBM25_Mut > 0)
+
+peaks_A$L2FC_WT = log2(peaks_A$nTC_hnRNPC_WT_inRBM25_WT/peaks_A$nTC_hnRNPC_WT)
+peaks_A$L2FC_Mut = log2(peaks_A$nTC_hnRNPC_WT_inRBM25_Mut/peaks_A$nTC_hnRNPC_WT)
+
+peaks_B = peaks_union_df %>% filter(nTC_hnRNPC_WT > 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_WT > 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_Mut == 0)
+
+peaks_B$L2FC_WT = log2(peaks_B$nTC_hnRNPC_WT_inRBM25_WT/peaks_B$nTC_hnRNPC_WT)
+
+peaks_C = peaks_union_df %>% filter(nTC_hnRNPC_WT > 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_WT == 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_Mut > 0)
+
+peaks_C$L2FC_Mut = log2(peaks_C$nTC_hnRNPC_WT_inRBM25_Mut/peaks_C$nTC_hnRNPC_WT)
+
+peaks_D = peaks_union_df %>% filter(nTC_hnRNPC_WT > 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_WT == 0 & 
+                                      nTC_hnRNPC_WT_inRBM25_Mut == 0)
+
+
+peaks_A %>% filter(name %in% peaks_hnRNPC_WT$name)
+peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+
+peaks_B %>% filter(name %in% peaks_hnRNPC_WT$name)
+peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+
+peaks_C %>% filter(name %in% peaks_hnRNPC_WT$name)
+peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+
+peaks_D %>% filter(name %in% peaks_hnRNPC_WT$name)
+peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+
+## peaks_A plotting
+# Ensure Annotation is a factor with the desired order for the grid
+peaks_A$grouped_annotation = factor(
+  peaks_A$grouped_annotation, 
   levels = c("5'UTR", "CDS", "3'UTR", "intron", "ncRNA", "unannotated")
 )
 
-# 3. Figure 1: Overlaid Scatterplot
-ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
+# Figure 1: Overlaid Scatterplot
+ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
   geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
   geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
   geom_point(pch = 16, size = 3, alpha = 0.6) +
@@ -332,13 +408,13 @@ ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
   theme(axis.text = element_text(size=12), 
         axis.title = element_text(size=14, face = 'bold'))
 
-# 4. Figure 2: 2x3 Faceted Panels
-ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
+# Figure 2: 2x3 Faceted Panels
+ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
   geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
   geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
   geom_point(pch = 16, size = 2, alpha = 0.6) +
   # Facet into 2 rows and 3 columns
-  facet_wrap(~Annotation, nrow = 2, ncol = 3) +
+  facet_wrap(~grouped_annotation, nrow = 2, ncol = 3) +
   scale_color_manual(values = peak_colors) +
   scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
   scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
@@ -349,10 +425,239 @@ ggplot(L2FC_hnRNPC_inRBM25, aes(x = WT, y = Mut, color = Annotation)) +
         axis.title = element_text(size=14, face = 'bold'),
         strip.background = element_rect(fill = "white"),
         strip.text = element_text(size = 12, face = "bold"),
-        legend.position = "none") # Legend is redundant with facet titles
+        legend.position = "none")
 
+
+
+## genes that has shared peaks with greater than 2 fold increase/reduction 
+peaks_A_focused = peaks_A %>% filter(L2FC_WT >= 1 & L2FC_Mut >= 1)
+focused_gene_summary_table = peaks_A_focused %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+peaks_A_masked = peaks_A %>% filter(L2FC_WT <= -1 & L2FC_Mut <= -1)
+masked_gene_summary_table = peaks_A_masked %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+
+## Master gene count table
+# 1. Calculate peak counts per gene (dropping empty names)
+counts_Null = peaks_hnRNPC_WT %>% 
+  filter(external_gene_name != "") %>% 
+  count(external_gene_name, name = "Null")
+
+counts_WT_OE = peaks_hnRNPC_WT_inRBM25_WT %>% 
+  filter(external_gene_name != "") %>% 
+  count(external_gene_name, name = "RBM25_WT_OE")
+
+counts_Mut_OE = peaks_hnRNPC_WT_inRBM25_Mut %>% 
+  filter(external_gene_name != "") %>% 
+  count(external_gene_name, name = "RBM25_Mut_OE")
+
+# 2. Join into a master reference table
+master_gene_counts = counts_Null %>%
+  full_join(counts_WT_OE, by = "external_gene_name") %>%
+  full_join(counts_Mut_OE, by = "external_gene_name") %>%
+  # Replace NAs with 0 for genes not found in a specific condition
+  mutate(across(c(Null, RBM25_WT_OE, RBM25_Mut_OE), ~replace_na(., 0))) %>%
+  rename(genes = external_gene_name)
+
+# 3. Create peak_focusing and peak_masking tables
+focused_genes = unique(peaks_A_focused$external_gene_name)
+masked_genes  = unique(peaks_A_masked$external_gene_name)
+
+peak_focusing = master_gene_counts %>%
+  filter(genes %in% focused_genes) %>%
+  arrange(desc(RBM25_WT_OE))
+
+peak_masking = master_gene_counts %>%
+  filter(genes %in% masked_genes) %>%
+  arrange(desc(Null))
+
+
+write.csv(focused_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupA_focused_peaks_count_per_gene.csv", row.names = F)
+write.csv(masked_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupA_masked_peaks_count_per_gene.csv", row.names = F)
+
+write.csv(master_gene_counts, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/Union_peaks_total_count_per_gene.csv", row.names = F)
+write.csv(peak_focusing, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupA_peaks_total_count_per_gene_focused.csv", row.names = F)
+write.csv(peak_masking, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupA_peaks_total_count_per_gene_masked.csv", row.names = F)
 
 ################################################################################
+
+################################################################################
+
+peaks_B_focused = peaks_B %>% filter(L2FC_WT >= 1)
+focused_gene_summary_table = peaks_B_focused %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+peaks_B_masked = peaks_B %>% filter(L2FC_WT <= -1)
+masked_gene_summary_table = peaks_B_masked %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+focused_genes = unique(peaks_B_focused$external_gene_name)
+masked_genes  = unique(peaks_B_masked$external_gene_name)
+
+peak_focusing = master_gene_counts %>%
+  filter(genes %in% focused_genes) %>%
+  arrange(desc(RBM25_WT_OE))
+
+peak_masking = master_gene_counts %>%
+  filter(genes %in% masked_genes) %>%
+  arrange(desc(Null))
+
+write.csv(focused_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupB_focused_peaks_count_per_gene.csv", row.names = F)
+write.csv(masked_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupB_masked_peaks_count_per_gene.csv", row.names = F)
+write.csv(peak_focusing, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupB_peaks_total_count_per_gene_focused.csv", row.names = F)
+write.csv(peak_masking, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupB_peaks_total_count_per_gene_masked.csv", row.names = F)
+
+################################################################################
+
+################################################################################
+
+peaks_C_focused = peaks_C %>% filter(L2FC_Mut >= 1)
+focused_gene_summary_table = peaks_C_focused %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+peaks_C_masked = peaks_C %>% filter(L2FC_Mut <= -1)
+masked_gene_summary_table = peaks_C_masked %>%
+  count(external_gene_name, name = "peak_count") %>%
+  arrange(desc(peak_count))
+
+focused_genes = unique(peaks_C_focused$external_gene_name)
+masked_genes  = unique(peaks_C_masked$external_gene_name)
+
+peak_focusing = master_gene_counts %>%
+  filter(genes %in% focused_genes) %>%
+  arrange(desc(RBM25_WT_OE))
+
+peak_masking = master_gene_counts %>%
+  filter(genes %in% masked_genes) %>%
+  arrange(desc(Null))
+
+write.csv(focused_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_focused_peaks_count_per_gene.csv", row.names = F)
+write.csv(masked_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_masked_peaks_count_per_gene.csv", row.names = F)
+write.csv(peak_focusing, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_peaks_total_count_per_gene_focused.csv", row.names = F)
+write.csv(peak_masking, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_peaks_total_count_per_gene_masked.csv", row.names = F)
+
+################################################################################
+
+## Focusing/Masking Analysis
+################################################################################
+## 1. Classification & Data Prep
+# Defined standard group palette to keep it consistent across all plots
+group_palette = c("A" = "#999999", "B" = "#E69F00", "C" = "#56B4E9", "D" = "#009E73")
+
+peaks_union_df = peaks_union_df %>%
+  mutate(Group = case_when(
+    nTC_hnRNPC_WT > 0 & nTC_hnRNPC_WT_inRBM25_WT > 0 & nTC_hnRNPC_WT_inRBM25_Mut > 0 ~ "A",
+    nTC_hnRNPC_WT > 0 & nTC_hnRNPC_WT_inRBM25_WT > 0 & nTC_hnRNPC_WT_inRBM25_Mut == 0 ~ "B",
+    nTC_hnRNPC_WT > 0 & nTC_hnRNPC_WT_inRBM25_WT == 0 & nTC_hnRNPC_WT_inRBM25_Mut > 0 ~ "C",
+    nTC_hnRNPC_WT > 0 & nTC_hnRNPC_WT_inRBM25_WT == 0 & nTC_hnRNPC_WT_inRBM25_Mut == 0 ~ "D",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(Group)) %>%
+  mutate(Group = factor(Group, levels = c("A", "B", "C", "D")))
+
+## 2. Peak Composition (Single Bar - Absolute & Proportional)
+group_summary = peaks_union_df %>% count(Group)
+
+# Base plot for composition
+p_comp = ggplot(group_summary, aes(x = "All Peaks", y = n, fill = Group)) +
+  scale_fill_manual(values = group_palette) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 14, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"))
+
+# Absolute
+p_comp_abs = p_comp + 
+  geom_bar(stat = "identity", width = 0.5) +
+  geom_text(aes(label = n), position = position_stack(vjust = 0.5), size = 5, color = "white", fontface = "bold") +
+  labs(title = "Composition of Overlap Groups (A-D)", x = "", y = "Number of Peaks")
+
+# Proportional
+p_comp_prop = p_comp + 
+  geom_bar(stat = "identity", position = "fill", width = 0.5) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Proportion of Overlap Groups (A-D)", x = "", y = "Percentage")
+
+## 3. 4-Way Gene Venn (Euler)
+# Streamlined: Create list directly from the grouped dataframe
+gene_overlap_list = peaks_union_df %>%
+  split(.$Group) %>%
+  map(~unique(.$external_gene_name))
+
+plot(euler(gene_overlap_list), 
+     quantities = TRUE, fill = group_palette, alpha = 0.6,
+     main = "Gene Overlap across Peak Groups A-D")
+
+## 4. Peak Annotation Distributions (Groups A-D)
+# Aggregated cleaning and annotation prep
+PeakDist_ABCD = peaks_union_df %>%
+  count(Group, grouped_annotation) %>%
+  rename(Source = Group, Annotation = grouped_annotation, Freq = n) %>%
+  mutate(Annotation = factor(Annotation, levels = All_Annotation_List))
+
+# Absolute Plot
+plot_ABCD_abs = plotStackedBar(PeakDist_ABCD, c("A", "B", "C", "D"), 
+                               paste("Group", c("A", "B", "C", "D")), 
+                               "Annotation Distribution (Counts)") +
+  scale_fill_manual(values = peak_colors)
+
+# Proportional Plot
+plot_ABCD_prop = PeakDist_ABCD %>%
+  group_by(Source) %>%
+  mutate(Freq = Freq / sum(Freq)) %>%
+  plotStackedBar(c("A", "B", "C", "D"), 
+                 paste("Group", c("A", "B", "C", "D")), 
+                 "Annotation Distribution (Proportion)") +
+  scale_fill_manual(values = peak_colors)
+
+print(p_comp_abs); print(p_comp_prop); print(plot_ABCD_abs); print(plot_ABCD_prop)
+################################################################################
+
+
+
+
+
+## 6. Peak Overlap TC comparison for hnRNPC in RBM25 WT/Mut OE:
+################################################################################
+
+# Identify overlapping peaks
+peaks_overlap = intersect(peaks_hnRNPC_WT$name, 
+                          intersect(peaks_hnRNPC_WT_inRBM25_WT$name, 
+                                    peaks_hnRNPC_WT_inRBM25_Mut$name))
+
+# Filter and align dataframes (Keep extra columns)
+peaks_hnRNPC_WT_overlap = peaks_hnRNPC_WT %>% 
+  filter(name %in% peaks_overlap) %>% 
+  arrange(name)
+
+peaks_hnRNPC_WT_inRBM25_WT_overlap = peaks_hnRNPC_WT_inRBM25_WT %>% 
+  filter(name %in% peaks_overlap) %>% 
+  arrange(name)
+
+peaks_hnRNPC_WT_inRBM25_Mut_overlap = peaks_hnRNPC_WT_inRBM25_Mut %>% 
+  filter(name %in% peaks_overlap) %>% 
+  arrange(name)
+
+# Construct peaks_overlap_df with gene names
+# Assuming external_gene_name is consistent across dataframes for the same peak name
+peaks_overlap_df = data.frame(
+  peak = peaks_hnRNPC_WT_overlap$name,
+  gene = peaks_hnRNPC_WT_overlap$external_gene_name,
+  annotation = peaks_hnRNPC_WT_overlap$grouped_annotation,
+  inRBM25WT = peaks_hnRNPC_WT_inRBM25_WT_overlap$nTC_hnRNPC_WT_inRBM25_WT / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT,
+  inRBM25Mut = peaks_hnRNPC_WT_inRBM25_Mut_overlap$nTC_hnRNPC_WT_inRBM25_Mut / peaks_hnRNPC_WT_overlap$nTC_hnRNPC_WT
+)
+
+ # Legend is redundant with facet titles
+################################################################################
+
+
 
 ## 7. Unique peak comparison for hnRNPC in RBM25 WT/Mut OE:
 ################################################################################
