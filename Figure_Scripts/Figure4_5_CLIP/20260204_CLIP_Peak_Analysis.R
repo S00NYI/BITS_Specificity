@@ -17,11 +17,11 @@ library(eulerr)
 
 ## 1. Basic Setup:
 ################################################################################
-BASE_DIR = "F:/Specificity/CLIP/Analysis/"
+# BASE_DIR = "F:/Specificity/CLIP/Analysis/"
 # INPUT_DIR = paste0(BASE_DIR, "output/")
 # OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
-# BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
+BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
 INPUT_DIR = paste0(BASE_DIR, "output/")
 OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
@@ -542,6 +542,18 @@ write.csv(focused_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis
 write.csv(masked_gene_summary_table, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_masked_peaks_count_per_gene.csv", row.names = F)
 write.csv(peak_focusing, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_peaks_total_count_per_gene_focused.csv", row.names = F)
 write.csv(peak_masking, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupC_peaks_total_count_per_gene_masked.csv", row.names = F)
+
+################################################################################
+
+################################################################################
+
+focused_genes = unique(peaks_D$external_gene_name)
+
+peak_focusing = master_gene_counts %>%
+  filter(genes %in% focused_genes) %>%
+  arrange(desc(RBM25_WT_OE))
+
+write.csv(peak_focusing, "~/Repos/BITS_Specificity/Dataset/Analysis/CompCLIP/GroupD_peaks_total_count_per_gene.csv", row.names = F)
 
 ################################################################################
 
