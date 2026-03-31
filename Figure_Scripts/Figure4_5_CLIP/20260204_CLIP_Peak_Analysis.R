@@ -14,14 +14,17 @@ library(stringr)
 library(ggplot2)
 library(ggsignif)
 library(eulerr)
+library(ggExtra)
+library(dplyr)
+library(patchwork)
 
 ## 1. Basic Setup:
 ################################################################################
-# BASE_DIR = "F:/Specificity/CLIP/Analysis/"
+BASE_DIR = "F:/Specificity/CLIP/Analysis/"
 # INPUT_DIR = paste0(BASE_DIR, "output/")
 # OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
-BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
+# BASE_DIR = "/Volumes/1TB_Data/Specificity/CLIP/Analysis/"
 INPUT_DIR = paste0(BASE_DIR, "output/")
 OUTPUT_DIR = paste0(BASE_DIR, "output/")
 
@@ -370,21 +373,21 @@ peaks_D = peaks_union_df %>% filter(nTC_hnRNPC_WT > 0 &
                                       nTC_hnRNPC_WT_inRBM25_Mut == 0)
 
 
-peaks_A %>% filter(name %in% peaks_hnRNPC_WT$name)
-peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
-peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
-
-peaks_B %>% filter(name %in% peaks_hnRNPC_WT$name)
-peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
-peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
-
-peaks_C %>% filter(name %in% peaks_hnRNPC_WT$name)
-peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
-peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
-
-peaks_D %>% filter(name %in% peaks_hnRNPC_WT$name)
-peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
-peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+# peaks_A %>% filter(name %in% peaks_hnRNPC_WT$name)
+# peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+# peaks_A %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+# 
+# peaks_B %>% filter(name %in% peaks_hnRNPC_WT$name)
+# peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+# peaks_B %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+# 
+# peaks_C %>% filter(name %in% peaks_hnRNPC_WT$name)
+# peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+# peaks_C %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
+# 
+# peaks_D %>% filter(name %in% peaks_hnRNPC_WT$name)
+# peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_WT$name)
+# peaks_D %>% filter(name %in% peaks_hnRNPC_WT_inRBM25_Mut$name)
 
 ## peaks_A plotting
 # Ensure Annotation is a factor with the desired order for the grid
@@ -407,6 +410,72 @@ ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
   theme_bw() + 
   theme(axis.text = element_text(size=12), 
         axis.title = element_text(size=14, face = 'bold'))
+
+# Top Marginal CDF (Boxed)
+p_top = ggplot(peaks_A, aes(x = L2FC_WT, color = grouped_annotation)) +
+  stat_ecdf(geom = "step", linewidth = 1) +
+  stat_ecdf(data = peaks_A, aes(x = L2FC_WT), geom = "step", 
+            color = "black", linetype = "dashed", linewidth = 0.8) +
+  scale_color_manual(values = peak_colors) +
+  scale_x_continuous(limits = c(-5, 5), expand = c(0,0)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
+  labs(y = "CDF") +
+  theme_bw() + 
+  theme(legend.position = "none", 
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.margin = margin(5, 5, 2, 5))
+
+# Right Marginal CDF (Boxed)
+p_right = ggplot(peaks_A, aes(x = L2FC_Mut, color = grouped_annotation)) +
+  stat_ecdf(geom = "step", linewidth = 1) +
+  stat_ecdf(data = peaks_A, aes(x = L2FC_Mut), geom = "step", 
+            color = "black", linetype = "dashed", linewidth = 0.8) +
+  scale_color_manual(values = peak_colors) +
+  scale_x_continuous(limits = c(-5, 5), expand = c(0,0)) + # Acts as Y due to flip
+  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1)) +
+  labs(y = "CDF") +
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "none", 
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.margin = margin(5, 5, 5, 2))
+
+# Main Scatterplot (Adjusted margins)
+p_main = ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
+  geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_point(pch = 16, size = 3, alpha = 0.4) +
+  scale_color_manual(values = peak_colors) +
+  scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5), expand = c(0,0)) +
+  theme_bw() + 
+  theme(legend.position = "bottom", 
+        plot.margin = margin(2, 2, 5, 5))
+
+# Combine
+(p_top + plot_spacer() + p_main + p_right) + 
+  plot_layout(ncol = 2, nrow = 2, widths = c(4, 1), heights = c(1, 4))
+
+# KS-Test Calculations (per Biotype vs All)
+ks_stats = peaks_A %>%
+  group_by(grouped_annotation) %>%
+  summarise(
+    n = n(),
+    # WT Axis KS
+    ks_p_WT = ks.test(L2FC_WT, peaks_A$L2FC_WT)$p.value,
+    ks_D_WT = ks.test(L2FC_WT, peaks_A$L2FC_WT)$statistic,
+    # Mut Axis KS
+    ks_p_Mut = ks.test(L2FC_Mut, peaks_A$L2FC_Mut)$p.value,
+    ks_D_Mut = ks.test(L2FC_Mut, peaks_A$L2FC_Mut)$statistic
+  ) %>%
+  arrange(grouped_annotation)
+
+print(ks_stats)
+
 
 # Figure 2: 2x3 Faceted Panels
 ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
