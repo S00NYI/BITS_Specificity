@@ -325,7 +325,8 @@ peak_colors = c(
 
 # Join all dataframes
 peaks_union_df = peaks_hnRNPC_WT %>%
-  select(name, external_gene_name, grouped_annotation, nTC_hnRNPC_WT) %>%
+  # INCLUDE THE COLUMNS HERE
+  select(chr, start, end, name, strand, external_gene_name, grouped_annotation, nTC_hnRNPC_WT) %>%
   full_join(
     peaks_hnRNPC_WT_inRBM25_WT %>% select(name, nTC_hnRNPC_WT_inRBM25_WT),
     by = "name"
