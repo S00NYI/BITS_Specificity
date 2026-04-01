@@ -335,6 +335,13 @@ peaks_union_df = peaks_hnRNPC_WT %>%
     by = "name"
   )
 
+peaks_union_denovo = peaks_union_df %>% filter(name %notin% peaks_hnRNPC_WT$name)
+peaks_union_denovo %>% filter(!is.na(nTC_hnRNPC_WT_inRBM25_WT) & !is.na(nTC_hnRNPC_WT_inRBM25_Mut))
+peaks_union_denovo %>% filter(is.na(nTC_hnRNPC_WT_inRBM25_WT) & !is.na(nTC_hnRNPC_WT_inRBM25_Mut))
+peaks_union_denovo %>% filter(!is.na(nTC_hnRNPC_WT_inRBM25_WT) & is.na(nTC_hnRNPC_WT_inRBM25_Mut))
+
+
+
 peaks_union_df = peaks_union_df %>% filter(external_gene_name != "")
 
 # Targeted NA replacement for numeric columns only
@@ -475,6 +482,93 @@ ks_stats = peaks_A %>%
   arrange(grouped_annotation)
 
 print(ks_stats)
+
+## Condensed Scatter:
+# Limits with padding
+plot_lims = c(-2.7, 2.7)
+
+# WT Marginal CDF (Boxed)
+p_top = ggplot(peaks_A_condensed, aes(x = L2FC_WT, color = grouped_annotation_bin)) +
+  stat_ecdf(geom = "step", linewidth = 1) +
+  stat_ecdf(data = peaks_A_condensed, aes(x = L2FC_WT), geom = "step", 
+            color = "black", linetype = "dashed", linewidth = 0.8) +
+  scale_color_manual(values = bin_colors) +
+  scale_x_continuous(limits = plot_lims, expand = c(0,0)) + # Padded limits
+  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1), expand = c(0.02, 0.02)) +
+  labs(y = "CDF") +
+  theme_bw() + 
+  theme(legend.position = "none", 
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.margin = margin(5, 5, 2, 5))
+
+# Mut Marginal CDF (Boxed)
+p_right = ggplot(peaks_A_condensed, aes(x = L2FC_Mut, color = grouped_annotation_bin)) +
+  stat_ecdf(geom = "step", linewidth = 1) +
+  stat_ecdf(data = peaks_A_condensed, aes(x = L2FC_Mut), geom = "step", 
+            color = "black", linetype = "dashed", linewidth = 0.8) +
+  scale_color_manual(values = bin_colors) +
+  scale_x_continuous(limits = plot_lims, expand = c(0,0)) + 
+  scale_y_continuous(breaks = c(0, 0.5, 1), limits = c(0, 1), expand = c(0.02, 0.02)) +
+  labs(y = "CDF") +
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "none", 
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.margin = margin(5, 5, 5, 2))
+
+# Main Scatterplot (Padded limits)
+p_main = ggplot(peaks_A_condensed, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation_bin)) +
+  geom_hline(yintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_vline(xintercept = c(1, -1), color = "red", linetype = 'dotted') +
+  geom_point(pch = 16, size = 2.5, alpha = 0.4) +
+  scale_color_manual(values = bin_colors) +
+  # Keep breaks at original 2.5 intervals, but limits at 2.7
+  scale_x_continuous(limits = plot_lims, breaks = seq(-2.5, 2.5, by = 1.25), expand = c(0,0)) +
+  scale_y_continuous(limits = plot_lims, breaks = seq(-2.5, 2.5, by = 1.25), expand = c(0,0)) +
+  labs(x = "Log2(WT OE / Null)", y = "Log2(Mut OE / Null)") +
+  theme_bw() + 
+  theme(legend.position = "bottom", 
+        plot.margin = margin(2, 2, 5, 5))
+
+# Combine
+(p_top + plot_spacer() + p_main + p_right) + 
+  plot_layout(ncol = 2, nrow = 2, widths = c(4, 1), heights = c(1, 4))
+
+## KS test for condensed:
+# Define Data Vectors
+val_intron_WT = peaks_A_condensed$L2FC_WT[peaks_A_condensed$grouped_annotation_bin == "intron"]
+val_others_WT = peaks_A_condensed$L2FC_WT[peaks_A_condensed$grouped_annotation_bin == "all others"]
+val_total_WT  = peaks_A_condensed$L2FC_WT
+
+val_intron_Mut = peaks_A_condensed$L2FC_Mut[peaks_A_condensed$grouped_annotation_bin == "intron"]
+val_others_Mut = peaks_A_condensed$L2FC_Mut[peaks_A_condensed$grouped_annotation_bin == "all others"]
+val_total_Mut  = peaks_A_condensed$L2FC_Mut
+
+# KS-Tests for WT Axis
+ks_IvO_WT = ks.test(val_intron_WT, val_others_WT)
+ks_IvT_WT = ks.test(val_intron_WT, val_total_WT)
+ks_OvT_WT = ks.test(val_others_WT, val_total_WT)
+
+# KS-Tests for Mut Axis
+ks_IvO_Mut = ks.test(val_intron_Mut, val_others_Mut)
+ks_IvT_Mut = ks.test(val_intron_Mut, val_total_Mut)
+ks_OvT_Mut = ks.test(val_others_Mut, val_total_Mut)
+
+# Consolidate Results
+ks_summary = data.frame(
+  Comparison = rep(c("Intron vs All Others", "Intron vs Total", "All Others vs Total"), 2),
+  Axis = rep(c("WT", "Mut"), each = 3),
+  p_value = c(ks_IvO_WT$p.value, ks_IvT_WT$p.value, ks_OvT_WT$p.value,
+              ks_IvO_Mut$p.value, ks_IvT_Mut$p.value, ks_OvT_Mut$p.value),
+  D_stat = c(ks_IvO_WT$statistic, ks_IvT_WT$statistic, ks_OvT_WT$statistic,
+             ks_IvO_Mut$statistic, ks_IvT_Mut$statistic, ks_OvT_Mut$statistic)
+)
+
+print(ks_summary)
 
 
 # Figure 2: 2x3 Faceted Panels
