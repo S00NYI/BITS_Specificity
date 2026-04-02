@@ -576,8 +576,9 @@ ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
   # Facet into 2 rows and 3 columns
   facet_wrap(~grouped_annotation, nrow = 2, ncol = 3) +
   scale_color_manual(values = peak_colors) +
-  scale_x_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
-  scale_y_continuous(limits = c(-5, 5), breaks = seq(-5, 5, by = 2.5)) +
+  # Updated to match condensed analysis limits and ticks
+  scale_x_continuous(limits = c(-2.7, 2.7), breaks = seq(-2, 2, by = 1)) +
+  scale_y_continuous(limits = c(-2.7, 2.7), breaks = seq(-2, 2, by = 1)) +
   labs(x = "Log2(HNRNPC WT in RBM25 WT OE / HNRNPC WT)", 
        y = "Log2(HNRNPC WT in RBM25 MUT OE / HNRNPC WT)") +
   theme_bw() + 
@@ -585,7 +586,8 @@ ggplot(peaks_A, aes(x = L2FC_WT, y = L2FC_Mut, color = grouped_annotation)) +
         axis.title = element_text(size=14, face = 'bold'),
         strip.background = element_rect(fill = "white"),
         strip.text = element_text(size = 12, face = "bold"),
-        legend.position = "none")
+        legend.position = "none",
+        panel.grid.minor = element_blank())
 
 
 
