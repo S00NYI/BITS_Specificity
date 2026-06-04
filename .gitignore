@@ -1,3 +1,17 @@
 .DS_Store
 Dataset/~$Table_S3.xlsx
 Miscellaneous/MSI_UNK.R
+Figure_Scripts/_deprecated/ClinVar_Analysis/Stage1_pool_annotate.R
+Figure_Scripts/_deprecated/ClinVar_Analysis/Stage1b_build_class_territory.R
+Figure_Scripts/_deprecated/ClinVar_Analysis/Stage2_prep_clinvar.sh
+Figure_Scripts/_deprecated/ClinVar_Analysis/Stage3_diagnostic.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S1_build_territory.R
+Figure_Scripts/_deprecated/gnomAD_Analysis/S2_pool_annotate.R
+Figure_Scripts/_deprecated/gnomAD_Analysis/S3_build_backgrounds.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S4_pull_gnomad_local_parallel.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S5_depletion_enrichment.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S5_depletion_fixedbaseline.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S5_frequency_MAPS.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S5_test_7RBP.sh
+Figure_Scripts/_deprecated/gnomAD_Analysis/S6_correlation.R
+Figure_Scripts/_deprecated/gnomAD_Analysis/S6_frequency_correlation.R
