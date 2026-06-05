@@ -144,7 +144,7 @@ ggplot(df, aes(x = avg_CL, y = CS, label = RBP)) +
   geom_point(size = 2) +
   geom_text_repel(size = 3) +
   scale_x_continuous(transform = "log10", limits = c(0.1, 100)) +
-  scale_y_continuous(transform = "log10", limits = c(0.1, 100)) +
+  scale_y_continuous(transform = "log10", limits = c(1, 100)) +
   labs(x = "%CL", y = "CS", title = "CS vs %CL") +
   annotate("text", x = Inf, y = Inf,
            label = paste0("R == ", format(r, digits = 2), "~~~p == ", format(pv, digits = 2)),
@@ -166,7 +166,7 @@ ggplot(df, aes(x = avg_CL, y = CVS, label = RBP)) +
   geom_point(size = 2) +
   geom_text_repel(size = 3) +
   scale_x_continuous(transform = "log10", limits = c(0.1, 100)) +
-  scale_y_continuous(transform = "log10", limits = c(0.1, 1)) +
+  scale_y_continuous(limits = c(0.1, 1)) +
   labs(x = "%CL", y = "CVS", title = "CVS vs %CL") +
   annotate("text", x = Inf, y = Inf,
            label = paste0("R == ", format(r, digits = 2), "~~~p == ", format(pv, digits = 2)),
