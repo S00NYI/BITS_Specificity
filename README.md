@@ -1,6 +1,6 @@
 ## RBP Specificity Analysis Scripts
 - Author: Soon Yi
-- Last updated: 2026-02-22
+- Last updated: 2026-07-03
 ---
 
 ## Repository Structure
@@ -53,7 +53,7 @@ Legacy analysis scripts superseded by the current Figure/PreProcessing scripts.
 
 ---
 For more information, please check our manuscript:
-> Yi S, Singh SS, Ye X, Krishna R, Jankowsky E, Luna JM. (2025). 
-> *Inherent Specificity and Mutational Sensitivity as Quantitative Metrics for RBP Binding.* 
-> bioRxiv. https://www.biorxiv.org/content/10.1101/2025.03.28.646018v2
+> Yi S, Singh SS, Ye X, Krishna R, Kothwela V, Jankowsky E, Luna JM. (2025).
+> Inherent Specificity and Mutational Sensitivity as Quantitative Metrics for RBP Binding.
+> bioRxiv. https://www.biorxiv.org/content/10.1101/2025.03.28.646018v4
 
