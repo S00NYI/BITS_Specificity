@@ -1,0 +1,9 @@
+transcript,PTBP1_peaks,HNRNPC_peaks,PTBP1_group,HNRNPC_group
+PTBP2,13,2,PTBP1 co-target,HNRNPC co-target
+C4BPB,0,0,PTBP1 non-target,HNRNPC non-target
+MAT2A,0,1,PTBP1 non-target,HNRNPC co-target
+PAPD4,4,4,PTBP1 co-target,HNRNPC co-target
+MYC,0,1,PTBP1 non-target,HNRNPC co-target
+PCBP2,0,1,PTBP1 non-target,HNRNPC co-target
+MYL6,2,0,PTBP1 co-target,HNRNPC non-target
+NF1,6,2,PTBP1 co-target,HNRNPC co-target
